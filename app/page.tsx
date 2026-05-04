@@ -1,65 +1,195 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import MaterialIcon from "@/components/MaterialIcon";
+import BookingSidebar from "@/components/BookingSidebar";
+import CalendarAirbnb from "@/components/CalendarAirbnb";
 
 export default function Home() {
+  const router = useRouter();
+
+  // 📅 ESTADO GLOBAL COMPARTIDO
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
+  const images = [
+    "/images/habitaciones/1.jpg",
+    "/images/habitaciones/2.jpg",
+    "/images/banos/1.jpg",
+    "/images/exteriores/1.jpg",
+    "/images/exteriores/2.jpg",
+  ];
+
+  const [openServicios, setOpenServicios] = useState(false);
+
+  const servicios = [
+    { icon: "wifi", label: "Wifi" },
+    { icon: "shower", label: "Agua caliente" },
+    { icon: "local_laundry_service", label: "Lavadora" },
+    { icon: "cleaning_services", label: "Servicios básicos" },
+    { icon: "checkroom", label: "Ganchos para ropa" },
+    { icon: "bed", label: "Sábanas" },
+    { icon: "dresser", label: "Ropero" },
+    { icon: "tv", label: "TV" },
+    { icon: "kitchen", label: "Refrigerador" },
+    { icon: "restaurant", label: "Cocina" },
+    { icon: "kettle", label: "Hervidor de agua" },
+    { icon: "coffee", label: "Cafetera" },
+    { icon: "blender", label: "Licuadora" },
+    { icon: "microwave", label: "Microondas" },
+    { icon: "local_pizza", label: "Pizzería cercana" },
+    { icon: "table_restaurant", label: "Mesa de comedor" },
+    { icon: "local_laundry_service", label: "Lavandería cercana" },
+    { icon: "directions_car", label: "Automóvil / parking" },
+    { icon: "elevator", label: "Ascensor" },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="max-w-6xl mx-auto p-6">
+
+      {/* 🧱 LAYOUT */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+        {/* CONTENIDO */}
+        <div className="md:col-span-2 space-y-10">
+
+          {/* GALERÍA */}
+          <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[500px] rounded-xl overflow-hidden">
+
+            <div
+              className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden"
+              onClick={() => router.push("/tour")}
+            >
+              <Image
+                src={images[0]}
+                alt=""
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                priority
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
+            </div>
+
+            {images.slice(1, 5).map((img, i) => (
+              <div
+                key={i}
+                className="relative cursor-pointer group overflow-hidden"
+                onClick={() => router.push("/tour")}
+              >
+                <Image
+                  src={img}
+                  alt=""
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover transition duration-500 group-hover:scale-[1.05]"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
+              </div>
+            ))}
+          </div>
+
+          {/* INFO */}
+          <div className="space-y-6">
+
+            <div>
+              <h1 className="text-2xl font-semibold">
+                Alojamiento entero: apartamento en San Miguel, Perú
+              </h1>
+              <p className="text-gray-600 mt-1">
+                6 huéspedes · 3 habitaciones · 3 camas · 2 baños
+              </p>
+            </div>
+
+            {/* 📅 CALENDARIO PRINCIPAL */}
+            <div className="border-t pt-6 space-y-3">
+              <h2 className="text-lg font-semibold">
+                Selecciona tus fechas
+              </h2>
+
+              <CalendarAirbnb
+                startDate={startDate}
+                endDate={endDate}
+                onSelectRange={(start: Date | null, end: Date | null) => {
+                  setStartDate(start);
+                  setEndDate(end);
+                }}
+              />
+            </div>
+
+            {/* SERVICIOS */}
+            <div className="border-t pt-6 space-y-3">
+              <h2 className="text-lg font-semibold">
+                Lo que este lugar ofrece
+              </h2>
+
+              <div className="grid grid-cols-2 gap-4">
+                {servicios.slice(0, 6).map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 hover:translate-x-1 transition"
+                  >
+                    <MaterialIcon
+                      name={item.icon}
+                      className="text-gray-600 text-[22px]"
+                    />
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setOpenServicios(true)}
+                className="underline font-medium hover:opacity-70"
+              >
+                Mostrar todos los servicios
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ✅ SIDEBAR CORREGIDO */}
+        <BookingSidebar
+          startDate={startDate}
+          endDate={endDate}
+          setStartDate={setStartDate}   // 🔥 FIX
+          setEndDate={setEndDate}       // 🔥 FIX
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+
+      </div>
+
+      {/* MODAL SERVICIOS */}
+      {openServicios && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
+          <div className="bg-white w-full max-w-2xl p-6 rounded-xl max-h-[80vh] overflow-y-auto">
+
+            <div className="flex justify-between mb-4">
+              <h2 className="text-xl font-semibold">Servicios</h2>
+              <button onClick={() => setOpenServicios(false)}>✕</button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {servicios.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 hover:translate-x-1 transition"
+                >
+                  <MaterialIcon
+                    name={item.icon}
+                    className="text-gray-600 text-[22px]"
+                  />
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      )}
+
     </div>
   );
 }
