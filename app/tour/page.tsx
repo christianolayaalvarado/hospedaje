@@ -5,10 +5,8 @@ import { gallerySections } from "@/lib/galleryData";
 import { useRef, useState } from "react";
 
 export default function TourPage() {
-
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeImages, setActiveImages] = useState<string[]>([]);
-
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   function scrollToSection(id: string) {
@@ -21,6 +19,11 @@ export default function TourPage() {
   function openModal(images: string[], index: number) {
     setActiveImages(images);
     setActiveIndex(index);
+  }
+
+  function closeModal() {
+    setActiveIndex(null);
+    setActiveImages([]);
   }
 
   function next() {
@@ -56,12 +59,12 @@ export default function TourPage() {
             onClick={() => scrollToSection(section.id)}
             className="flex flex-col items-center min-w-[110px] group"
           >
-            <div className="relative w-32 h-32 rounded-xl overflow-hidden">
+            <div className="relative w-28 h-20 rounded-xl overflow-hidden">
               <Image
-                src={section.images?.[0] || "/placeholder.jpg"}
+                src={section.images?.[0] ?? "/placeholder.jpg"} // ✅ FIX
                 alt={section.title}
                 fill
-                sizes="128px"
+                sizes="112px"
                 className="object-cover transition duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
@@ -87,10 +90,10 @@ export default function TourPage() {
             className="grid grid-cols-1 md:grid-cols-4 gap-8"
           >
 
-            {/* IZQUIERDA */}
+            {/* 🔹 INFO IZQUIERDA */}
             <div className="md:col-span-1">
               <div className="md:sticky md:top-32 space-y-2">
-                <h2 className="text-[32px] font-semibold leading-tight">
+                <h2 className="text-[30px] font-semibold leading-tight">
                   {section.title}
                 </h2>
 
@@ -100,12 +103,12 @@ export default function TourPage() {
               </div>
             </div>
 
-            {/* GRID */}
+            {/* 🔹 GRID IMÁGENES */}
             <div className="md:col-span-3 grid grid-cols-2 gap-4">
 
               {section.images.length >= 3 ? (
                 <>
-                  {/* GRANDE */}
+                  {/* Imagen grande */}
                   <div
                     onClick={() => openModal(section.images, 0)}
                     className="col-span-2 relative h-[350px] rounded-xl overflow-hidden cursor-pointer group"
@@ -119,7 +122,7 @@ export default function TourPage() {
                     />
                   </div>
 
-                  {/* RESTO */}
+                  {/* Resto */}
                   {section.images.slice(1).map((img, i) => (
                     <div
                       key={i}
@@ -165,15 +168,15 @@ export default function TourPage() {
       {activeIndex !== null && (
         <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
 
-          {/* cerrar */}
+          {/* CERRAR */}
           <button
-            onClick={() => setActiveIndex(null)}
+            onClick={closeModal}
             className="absolute top-6 right-6 text-white text-2xl"
           >
             ✕
           </button>
 
-          {/* imagen */}
+          {/* IMAGEN */}
           <div className="relative w-[90vw] h-[80vh]">
             <Image
               src={activeImages[activeIndex]}
@@ -183,7 +186,7 @@ export default function TourPage() {
             />
           </div>
 
-          {/* navegación */}
+          {/* NAV */}
           <button
             onClick={prev}
             className="absolute left-6 text-white text-4xl"
