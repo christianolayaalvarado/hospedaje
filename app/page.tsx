@@ -24,6 +24,13 @@ export default function Home() {
 
   const [openServicios, setOpenServicios] = useState(false);
 
+  // 💰 PRECIO DINÁMICO (REUTILIZABLE)
+  function getPrecioPorDia(date: Date) {
+    const day = date.getDay();
+    if (day === 0 || day === 6) return 180; // fin de semana
+    return 150; // semana
+  }
+
   const servicios = [
     { icon: "wifi", label: "Wifi" },
     { icon: "tv", label: "TV en sala" },
@@ -37,10 +44,6 @@ export default function Home() {
     { icon: "kitchen", label: "Refrigerador" },
     { icon: "restaurant", label: "Cocina" },
     { icon: "table_restaurant", label: "Mesa de comedor" },
-    
-
-
-    
     { icon: "kettle", label: "Hervidor de agua" },
     { icon: "coffee", label: "Cafetera" },
     { icon: "blender", label: "Licuadora" },
@@ -54,7 +57,7 @@ export default function Home() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
 
-      {/* 🔥 TÍTULO PRINCIPAL */}
+      {/* 🔥 TÍTULO */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
           HOSPEDAJE R&E BROWN
@@ -73,7 +76,7 @@ export default function Home() {
           {/* 🔥 GALERÍA */}
           <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[500px] rounded-xl overflow-hidden">
 
-            {/* IMAGEN PRINCIPAL */}
+            {/* PRINCIPAL */}
             <div
               className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden"
               onClick={() => router.push("/tour")}
@@ -86,10 +89,10 @@ export default function Home() {
                 className="object-cover transition duration-500 group-hover:scale-[1.03]"
                 priority
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition duration-300" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
             </div>
 
-            {/* IMÁGENES SECUNDARIAS */}
+            {/* SECUNDARIAS */}
             {images.slice(1, 5).map((img, i) => (
               <div
                 key={i}
@@ -103,12 +106,12 @@ export default function Home() {
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover transition duration-500 group-hover:scale-[1.05]"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition duration-300" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
               </div>
             ))}
           </div>
 
-          {/* 🔥 INFO */}
+          {/* INFO */}
           <div className="space-y-6">
 
             <div>
@@ -127,21 +130,15 @@ export default function Home() {
               </h3>
 
               <CalendarAirbnb
-                onChange={({ from, to }) => {
+                onChange={({ from, to }: { from?: Date; to?: Date }) => {
                   setStartDate(from ?? null);
                   setEndDate(to ?? null);
                 }}
-                getPrecioPorDia={(date) => {
-                  // 💰 lógica simple (puedes mejorar luego)
-                  const day = date.getDay();
-
-                  if (day === 0 || day === 6) return 180; // fin de semana
-                  return 150; // semana
-                }}
+                getPrecioPorDia={getPrecioPorDia}
               />
             </div>
 
-            {/* 🔥 SERVICIOS */}
+            {/* SERVICIOS */}
             <div className="border-t pt-6 space-y-3">
               <h3 className="text-lg font-semibold">
                 Lo que este lugar ofrece
@@ -149,10 +146,7 @@ export default function Home() {
 
               <div className="grid grid-cols-2 gap-4">
                 {servicios.slice(0, 6).map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 hover:translate-x-1 hover:text-black transition duration-200"
-                  >
+                  <div key={i} className="flex items-center gap-3 hover:translate-x-1 transition">
                     <MaterialIcon
                       name={item.icon}
                       className="text-gray-600 text-[22px]"
@@ -164,7 +158,7 @@ export default function Home() {
 
               <button
                 onClick={() => setOpenServicios(true)}
-                className="underline font-medium hover:opacity-70 transition"
+                className="underline font-medium hover:opacity-70"
               >
                 Mostrar todos los servicios
               </button>
@@ -173,7 +167,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 🔥 SIDEBAR */}
+        {/* SIDEBAR */}
         <BookingSidebar
           startDate={startDate}
           endDate={endDate}
@@ -183,7 +177,7 @@ export default function Home() {
 
       </div>
 
-      {/* 🔥 MODAL SERVICIOS */}
+      {/* MODAL */}
       {openServicios && (
         <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
           <div className="bg-white w-full max-w-2xl p-6 rounded-xl max-h-[80vh] overflow-y-auto">
@@ -195,10 +189,7 @@ export default function Home() {
 
             <div className="grid grid-cols-2 gap-4">
               {servicios.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 hover:translate-x-1 transition"
-                >
+                <div key={i} className="flex items-center gap-3 hover:translate-x-1 transition">
                   <MaterialIcon
                     name={item.icon}
                     className="text-gray-600 text-[22px]"
