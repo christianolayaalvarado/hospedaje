@@ -3,6 +3,7 @@ export type GallerySection = {
   title: string;
   description: string;
   images: string[];
+  cover?: string;
 };
 
 export const gallerySections:GallerySection[] = [
