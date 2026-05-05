@@ -10,7 +10,7 @@ import CalendarAirbnb from "@/components/CalendarAirbnb";
 export default function Home() {
   const router = useRouter();
 
-  // 📅 ESTADO GLOBAL COMPARTIDO
+  // 📅 ESTADO GLOBAL
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
@@ -47,7 +47,17 @@ export default function Home() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-8">
+
+      {/* 🔥 TÍTULO PRINCIPAL */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
+          HOSPEDAJE R&E BROWN
+        </h1>
+        <p className="text-gray-500">
+          Vive una experiencia cómoda y moderna en San Miguel
+        </p>
+      </div>
 
       {/* 🧱 LAYOUT */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -55,9 +65,10 @@ export default function Home() {
         {/* CONTENIDO */}
         <div className="md:col-span-2 space-y-10">
 
-          {/* GALERÍA */}
+          {/* 🔥 GALERÍA */}
           <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[500px] rounded-xl overflow-hidden">
 
+            {/* IMAGEN PRINCIPAL */}
             <div
               className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden"
               onClick={() => router.push("/tour")}
@@ -70,9 +81,10 @@ export default function Home() {
                 className="object-cover transition duration-500 group-hover:scale-[1.03]"
                 priority
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition duration-300" />
             </div>
 
+            {/* IMÁGENES SECUNDARIAS */}
             {images.slice(1, 5).map((img, i) => (
               <div
                 key={i}
@@ -86,28 +98,28 @@ export default function Home() {
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover transition duration-500 group-hover:scale-[1.05]"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition duration-300" />
               </div>
             ))}
           </div>
 
-          {/* INFO */}
+          {/* 🔥 INFO */}
           <div className="space-y-6">
 
             <div>
-              <h1 className="text-2xl font-semibold">
-                Alojamiento entero: apartamento en San Miguel, Perú
-              </h1>
+              <h2 className="text-2xl font-semibold">
+                Alojamiento entero en San Miguel, Perú
+              </h2>
               <p className="text-gray-600 mt-1">
                 6 huéspedes · 3 habitaciones · 3 camas · 2 baños
               </p>
             </div>
 
-            {/* 📅 CALENDARIO PRINCIPAL */}
+            {/* 📅 CALENDARIO */}
             <div className="border-t pt-6 space-y-3">
-              <h2 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold">
                 Selecciona tus fechas
-              </h2>
+              </h3>
 
               <CalendarAirbnb
                 startDate={startDate}
@@ -119,17 +131,17 @@ export default function Home() {
               />
             </div>
 
-            {/* SERVICIOS */}
+            {/* 🔥 SERVICIOS */}
             <div className="border-t pt-6 space-y-3">
-              <h2 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold">
                 Lo que este lugar ofrece
-              </h2>
+              </h3>
 
               <div className="grid grid-cols-2 gap-4">
                 {servicios.slice(0, 6).map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-3 hover:translate-x-1 transition"
+                    className="flex items-center gap-3 hover:translate-x-1 hover:text-black transition duration-200"
                   >
                     <MaterialIcon
                       name={item.icon}
@@ -142,7 +154,7 @@ export default function Home() {
 
               <button
                 onClick={() => setOpenServicios(true)}
-                className="underline font-medium hover:opacity-70"
+                className="underline font-medium hover:opacity-70 transition"
               >
                 Mostrar todos los servicios
               </button>
@@ -151,17 +163,17 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ✅ SIDEBAR CORREGIDO */}
+        {/* 🔥 SIDEBAR */}
         <BookingSidebar
           startDate={startDate}
           endDate={endDate}
-          setStartDate={setStartDate}   // 🔥 FIX
-          setEndDate={setEndDate}       // 🔥 FIX
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
         />
 
       </div>
 
-      {/* MODAL SERVICIOS */}
+      {/* 🔥 MODAL SERVICIOS */}
       {openServicios && (
         <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
           <div className="bg-white w-full max-w-2xl p-6 rounded-xl max-h-[80vh] overflow-y-auto">
