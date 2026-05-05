@@ -19,7 +19,11 @@ export default function BookingSidebar({
 }: Props) {
   const [open, setOpen] = useState(false);
 
-  const pricePerNight = 180;
+  function getPrecioPorDia(date: Date) {
+  const day = date.getDay();
+  if (day === 0 || day === 6) return 180;
+  return 150;
+}
   const cleaningFee = 50;
   const serviceFee = 30;
 
@@ -34,7 +38,20 @@ export default function BookingSidebar({
         )
       : 0;
 
-  const total = nights > 0 ? nights * pricePerNight + cleaningFee + serviceFee : 0;
+        const total =
+        startDate && endDate
+          ? (() => {
+              let sum = 0;
+              const current = new Date(startDate);
+
+              while (current < endDate) {
+                sum += getPrecioPorDia(current);
+                current.setDate(current.getDate() + 1);
+              }
+
+              return sum + cleaningFee + serviceFee;
+            })()
+          : 0;
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "auto";
@@ -83,7 +100,7 @@ export default function BookingSidebar({
             <div className="text-sm space-y-2 border-t pt-4">
               <div className="flex justify-between">
                 <span>
-                  S/ {pricePerNight} x {nights} noches
+                  {nights} noches
                 </span>
                 <span>S/ {pricePerNight * nights}</span>
               </div>
@@ -145,14 +162,12 @@ export default function BookingSidebar({
                 </div>
 
                 <CalendarAirbnb
-                  startDate={startDate}
-                  endDate={endDate}
-                  pricePerNight={pricePerNight}
-                  onChange={({ from, to }) => {
-                    setStartDate(from ?? null);
-                    setEndDate(to ?? null);
-                  }}
-                />
+                onChange={({ from, to }) => {
+                  setStartDate(from ?? null);
+                  setEndDate(to ?? null);
+                }}
+                getPrecioPorDia={getPrecioPorDia}
+              />
 
                 <div className="flex justify-between items-center mt-6">
                   <button
