@@ -37,7 +37,7 @@ export default function TourPage() {
           >
             <div className="relative w-24 h-16 rounded-lg overflow-hidden">
               <Image
-                src={section.images?.[0] || "/placeholder.jpg"} // ✅ FIX AQUÍ
+            src={section.images?.[0] ?? "/placeholder.jpg"} // ✅ FIX AQUÍ
                 alt={section.title}
                 fill
                 sizes="96px"
