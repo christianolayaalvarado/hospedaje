@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { DayPicker, DateRange } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { useState } from "react";
 
 type Props = {
   onChange: (range: { from?: Date; to?: Date }) => void;
@@ -13,11 +13,14 @@ export default function CalendarAirbnb({
   onChange,
   getPrecioPorDia,
 }: Props) {
-  const [range, setRange] = useState<DateRange | undefined>();
+  const [range, setRange] = useState<{
+    from?: Date;
+    to?: Date;
+  }>({});
 
-  function handleSelect(r: DateRange | undefined) {
+  function handleSelect(r: any) {
     setRange(r);
-    onChange(r || {});
+    onChange(r);
   }
 
   return (
@@ -27,16 +30,21 @@ export default function CalendarAirbnb({
         selected={range}
         onSelect={handleSelect}
         numberOfMonths={2}
+        modifiersClassNames={{
+          selected: "bg-black text-white",
+          range_start: "bg-black text-white",
+          range_end: "bg-black text-white",
+        }}
         components={{
-          Day: ({ day }) => {
-            const date = day.date;
+          DayContent: (props) => {
+            const date = props.date;
             const precio = getPrecioPorDia(date);
 
             return (
               <div className="flex flex-col items-center justify-center text-xs h-full">
                 <span>{date.getDate()}</span>
-                <span className="text-[10px] text-gray-500">
-                  S/{precio}
+                <span className="text-[10px] opacity-70">
+                  S/ {precio}
                 </span>
               </div>
             );
