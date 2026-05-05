@@ -1,6 +1,11 @@
-import { desc } from "framer-motion/client";
+export type GallerySection = {
+  id: string;
+  title: string;
+  description: string;
+  images: string[];
+};
 
-export const gallerySections = [
+export const gallerySections:GallerySection[] = [
   {
     id: "sala",
     title: "Sala",
