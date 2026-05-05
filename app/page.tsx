@@ -24,11 +24,11 @@ export default function Home() {
 
   const [openServicios, setOpenServicios] = useState(false);
 
-  // 💰 PRECIO DINÁMICO (REUTILIZABLE)
+  // 💰 PRECIO DINÁMICO
   function getPrecioPorDia(date: Date) {
     const day = date.getDay();
-    if (day === 0 || day === 6) return 180; // fin de semana
-    return 150; // semana
+    if (day === 0 || day === 6) return 180;
+    return 150;
   }
 
   const servicios = [
@@ -130,7 +130,7 @@ export default function Home() {
               </h3>
 
               <CalendarAirbnb
-                onChange={({ from, to }: { from?: Date; to?: Date }) => {
+                onChange={({ from, to }) => {
                   setStartDate(from ?? null);
                   setEndDate(to ?? null);
                 }}
