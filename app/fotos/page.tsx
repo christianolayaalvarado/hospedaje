@@ -5,7 +5,9 @@ import { gallerySections } from "@/lib/galleryData";
 import { useRef } from "react";
 
 export default function FotosPage() {
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  // 🔥 FIX: tipado correcto para evitar errores en build
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   function scrollToSection(id: string) {
     sectionRefs.current[id]?.scrollIntoView({
@@ -35,7 +37,7 @@ export default function FotosPage() {
           >
             <div className="relative w-24 h-16 rounded-lg overflow-hidden">
               <Image
-                src={section.images?.[0] ?? "/placeholder.jpg"} // 🔥 FIX REAL
+                src={section.images?.[0] || "/placeholder.jpg"} // ✅ SEGURO
                 alt={section.title}
                 fill
                 sizes="96px"
@@ -79,18 +81,20 @@ export default function FotosPage() {
             {/* GRID */}
             <div className="md:col-span-3 grid grid-cols-2 gap-4">
 
-              {section.images.length >= 3 ? (
+              {section.images && section.images.length >= 3 ? (
                 <>
+                  {/* IMAGEN PRINCIPAL */}
                   <div className="col-span-2 relative h-[350px] rounded-xl overflow-hidden">
                     <Image
                       src={section.images[0]}
-                      alt=""
+                      alt={section.title}
                       fill
                       sizes="100vw"
-                      className="object-cover"
+                      className="object-cover hover:scale-105 transition"
                     />
                   </div>
 
+                  {/* RESTO */}
                   {section.images.slice(1).map((img, i) => (
                     <div
                       key={i}
@@ -98,26 +102,26 @@ export default function FotosPage() {
                     >
                       <Image
                         src={img}
-                        alt=""
+                        alt={`${section.title} ${i + 1}`}
                         fill
                         sizes="(max-width:768px) 50vw, 25vw"
-                        className="object-cover"
+                        className="object-cover hover:scale-105 transition"
                       />
                     </div>
                   ))}
                 </>
               ) : (
-                section.images.map((img, i) => (
+                section.images?.map((img, i) => (
                   <div
                     key={i}
                     className="relative h-[250px] rounded-xl overflow-hidden"
                   >
                     <Image
                       src={img}
-                      alt=""
+                      alt={`${section.title} ${i + 1}`}
                       fill
                       sizes="(max-width:768px) 50vw, 33vw"
-                      className="object-cover"
+                      className="object-cover hover:scale-105 transition"
                     />
                   </div>
                 ))
