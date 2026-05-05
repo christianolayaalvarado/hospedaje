@@ -17,32 +17,37 @@ export default function Home() {
   const images = [
     "/images/habitaciones/1.jpg",
     "/images/habitaciones/2.jpg",
-    "/images/banos/1.jpg",
+    "/images/sala/2.jpg",
     "/images/exteriores/1.jpg",
-    "/images/exteriores/2.jpg",
+    "/images/cocina/1.jpg",
   ];
 
   const [openServicios, setOpenServicios] = useState(false);
 
   const servicios = [
     { icon: "wifi", label: "Wifi" },
+    { icon: "tv", label: "TV en sala" },
+    { icon: "tv", label: "TV en dormitorio principal" },
     { icon: "shower", label: "Agua caliente" },
     { icon: "local_laundry_service", label: "Lavadora" },
     { icon: "cleaning_services", label: "Servicios básicos" },
+    { icon: "dresser", label: "Ropero" },
     { icon: "checkroom", label: "Ganchos para ropa" },
     { icon: "bed", label: "Sábanas" },
-    { icon: "dresser", label: "Ropero" },
-    { icon: "tv", label: "TV" },
     { icon: "kitchen", label: "Refrigerador" },
     { icon: "restaurant", label: "Cocina" },
+    { icon: "table_restaurant", label: "Mesa de comedor" },
+    
+
+
+    
     { icon: "kettle", label: "Hervidor de agua" },
     { icon: "coffee", label: "Cafetera" },
     { icon: "blender", label: "Licuadora" },
     { icon: "microwave", label: "Microondas" },
     { icon: "local_pizza", label: "Pizzería cercana" },
-    { icon: "table_restaurant", label: "Mesa de comedor" },
     { icon: "local_laundry_service", label: "Lavandería cercana" },
-    { icon: "directions_car", label: "Automóvil / parking" },
+    { icon: "directions_car", label: "Parking en calle" },
     { icon: "elevator", label: "Ascensor" },
   ];
 
@@ -122,11 +127,16 @@ export default function Home() {
               </h3>
 
               <CalendarAirbnb
-                startDate={startDate}
-                endDate={endDate}
-                onSelectRange={(start: Date | null, end: Date | null) => {
-                  setStartDate(start);
-                  setEndDate(end);
+                onChange={({ from, to }) => {
+                  setStartDate(from ?? null);
+                  setEndDate(to ?? null);
+                }}
+                getPrecioPorDia={(date) => {
+                  // 💰 lógica simple (puedes mejorar luego)
+                  const day = date.getDay();
+
+                  if (day === 0 || day === 6) return 180; // fin de semana
+                  return 150; // semana
                 }}
               />
             </div>
