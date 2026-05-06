@@ -25,9 +25,6 @@ export default function Home() {
 
   const [openServicios, setOpenServicios] = useState(false);
 
-  // 💰 PRECIO DINÁMICO
-  
-
   const servicios = [
     { icon: "wifi", label: "Wifi" },
     { icon: "tv", label: "TV en sala" },
@@ -52,13 +49,14 @@ export default function Home() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
+    <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
 
       {/* 🔥 TÍTULO */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
           HOSPEDAJE R&E BROWN
         </h1>
+
         <p className="text-gray-500">
           Vive una experiencia cómoda y moderna en San Miguel
         </p>
@@ -70,36 +68,103 @@ export default function Home() {
         {/* CONTENIDO */}
         <div className="md:col-span-2 space-y-10">
 
-          {/* 🔥 GALERÍA */}
-          <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[500px] rounded-xl overflow-hidden">
+          {/* ========================================================= */}
+          {/* 🔥 GALERÍA RESPONSIVE */}
+          {/* ========================================================= */}
+
+          {/* ================= MOBILE ================= */}
+          <div className="md:hidden space-y-2">
+
+            {/* 🔥 PRINCIPAL */}
+            <div
+              className="relative aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer group active:scale-[.98] transition"
+              onClick={() => router.push("/tour")}
+            >
+              <Image
+                src={images[0]}
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover transition duration-700 group-hover:scale-105"
+                priority
+              />
+
+              {/* overlay */}
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition" />
+
+              {/* texto */}
+              <div className="absolute bottom-4 left-4">
+                <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
+                  <span className="text-sm font-medium">
+                    Ver recorrido →
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 🔥 MINIATURAS */}
+            <div className="grid grid-cols-2 gap-2">
+
+              {images.slice(1, 5).map((img, i) => (
+                <div
+                  key={i}
+                  className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer group active:scale-[.98] transition"
+                  onClick={() => router.push("/tour")}
+                >
+                  <Image
+                    src={img}
+                    alt=""
+                    fill
+                    sizes="50vw"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+
+                  {/* overlay */}
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition" />
+
+                  {/* hint */}
+                  <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition">
+                    <span className="bg-white/90 text-black text-[10px] px-2 py-1 rounded-full font-medium shadow">
+                      Ver
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+            </div>
+
+          </div>
+
+          {/* ================= DESKTOP ================= */}
+          <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-2 h-[500px] rounded-xl overflow-hidden">
 
             {/* PRINCIPAL */}
             <div
-  className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden active:scale-[.97] transition duration-200"
-  onClick={() => router.push("/tour")}
->
-  <Image
-    src={images[0]}
-    alt=""
-    fill
-    className="object-cover transition duration-700 group-hover:scale-110"
-    priority
-  />
+              className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden active:scale-[.97] transition duration-200"
+              onClick={() => router.push("/tour")}
+            >
+              <Image
+                src={images[0]}
+                alt=""
+                fill
+                className="object-cover transition duration-700 group-hover:scale-110"
+                priority
+              />
 
-  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition" />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition" />
 
-  <div className="absolute inset-0 flex items-center justify-center">
-    <div className="backdrop-blur-md bg-white/20 text-white px-6 py-3 rounded-xl opacity-0 group-hover:opacity-100 transition border border-white/30">
-      Ver recorrido completo →
-    </div>
-  </div>
-</div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="backdrop-blur-md bg-white/20 text-white px-6 py-3 rounded-xl opacity-0 group-hover:opacity-100 transition border border-white/30">
+                  Ver recorrido completo →
+                </div>
+              </div>
+            </div>
 
             {/* SECUNDARIAS */}
             {images.slice(1, 5).map((img, i) => (
               <div
                 key={i}
-                className="relative cursor-pointer group overflow-hidden  active:scale-[.98] transition"
+                className="relative cursor-pointer group overflow-hidden active:scale-[.98] transition"
                 onClick={() => router.push("/tour")}
               >
                 <Image
@@ -109,15 +174,17 @@ export default function Home() {
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover transition duration-500 group-hover:scale-[1.05]"
                 />
-                {/* Overlay oscuro */ }
+
+                {/* Overlay oscuro */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
 
                 {/* Texto pequeño */}
-  <div className="absolute bottom-2 left-2 text-white text-sm opacity-0 group-hover:opacity-100 transition">
-    Ver más
-  </div>
+                <div className="absolute bottom-2 left-2 text-white text-sm opacity-0 group-hover:opacity-100 transition">
+                  Ver más
+                </div>
               </div>
             ))}
+
           </div>
 
           {/* INFO */}
@@ -127,6 +194,7 @@ export default function Home() {
               <h2 className="text-2xl font-semibold">
                 Alojamiento entero en San Miguel, Perú
               </h2>
+
               <p className="text-gray-600 mt-1">
                 6 huéspedes · 3 habitaciones · 3 camas · 2 baños
               </p>
@@ -149,20 +217,27 @@ export default function Home() {
 
             {/* SERVICIOS */}
             <div className="border-t pt-6 space-y-3">
+
               <h3 className="text-lg font-semibold">
                 Lo que este lugar ofrece
               </h3>
 
               <div className="grid grid-cols-2 gap-4">
+
                 {servicios.slice(0, 6).map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 hover:translate-x-1 transition">
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 hover:translate-x-1 transition"
+                  >
                     <MaterialIcon
                       name={item.icon}
                       className="text-gray-600 text-[22px]"
                     />
+
                     <span>{item.label}</span>
                   </div>
                 ))}
+
               </div>
 
               <button
@@ -171,6 +246,7 @@ export default function Home() {
               >
                 Mostrar todos los servicios
               </button>
+
             </div>
 
           </div>
@@ -186,26 +262,38 @@ export default function Home() {
 
       </div>
 
-      {/* MODAL */}
+      {/* 🔥 MODAL */}
       {openServicios && (
         <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
+
           <div className="bg-white w-full max-w-2xl p-6 rounded-xl max-h-[80vh] overflow-y-auto">
 
             <div className="flex justify-between mb-4">
-              <h2 className="text-xl font-semibold">Servicios</h2>
-              <button onClick={() => setOpenServicios(false)}>✕</button>
+              <h2 className="text-xl font-semibold">
+                Servicios
+              </h2>
+
+              <button onClick={() => setOpenServicios(false)}>
+                ✕
+              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
+
               {servicios.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 hover:translate-x-1 transition">
+                <div
+                  key={i}
+                  className="flex items-center gap-3 hover:translate-x-1 transition"
+                >
                   <MaterialIcon
                     name={item.icon}
                     className="text-gray-600 text-[22px]"
                   />
+
                   <span>{item.label}</span>
                 </div>
               ))}
+
             </div>
 
           </div>
