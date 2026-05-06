@@ -34,11 +34,28 @@ export default function CalendarAirbnb({
         onSelect={handleSelect}
         numberOfMonths={2}
         modifiersClassNames={{
-          selected: "bg-black text-white",
-          range_start: "bg-black text-white",
-          range_end: "bg-black text-white",
+  selected:
+    "bg-black text-white font-medium",
+
+  range_start:
+    "bg-black text-white rounded-l-full font-medium",
+
+  range_end:
+    "bg-black text-white rounded-r-full font-medium",
+
+  range_middle:
+    "bg-gray-300 text-black",
+
+  today:
+    "border border-black font-semibold",
         }}
-        formatters={{
+  classNames={{
+  day: "h-11 w-11 text-sm rounded-full transition-colors",
+  day_button:
+    "h-11 w-11 rounded-full hover:bg-gray-200 transition",
+}}
+
+    formatters={{
           formatDay: (date) => {
             return date.getDate().toString();
           },
