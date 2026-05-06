@@ -92,6 +92,10 @@ export const gallerySections:GallerySection[] = [
     images: [
       "/images/lavanderia/1.jpg",
       "/images/lavanderia/2.jpg",
+      "/images/lavanderia/3.jpg",
+      "/images/lavanderia/4.jpg",
+      "/images/lavanderia/5.jpg",
+      "/images/lavanderia/6.jpg",
     ],
   },
   {
