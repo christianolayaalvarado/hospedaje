@@ -114,7 +114,7 @@ export default function TourPage() {
             ref={(el) => {
               sectionRefs.current[section.id] = el;
             }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-8 scroll-mt-40 md:scroll-mt-48"
+            className="grid grid-cols-1 md:grid-cols-4 gap-8 scroll-mt-48 md:scroll-mt-56"
           >
 
             {/* 🔹 INFO */}
@@ -131,68 +131,136 @@ export default function TourPage() {
             </div>
 
             {/* 🔹 IMÁGENES */}
-            <div className="md:col-span-3 grid grid-cols-2 gap-4">
+            <div className="md:col-span-3">
 
-              {section.images.length >= 3 ? (
+              {section.images.length >= 5 ? (
                 <>
-                  {/* PRINCIPAL */}
-                  <div
-                    onClick={() => openModal(section.images, 0)}
-                    className="col-span-2 relative h-[300px] md:h-[350px] rounded-xl overflow-hidden cursor-pointer group active:scale-[0.98] transition"
-                  >
-                    <Image
-                      src={section.images[0]}
-                      alt=""
-                      fill
-                      sizes="100vw"
-                      className="object-cover transition duration-500 group-hover:scale-105"
-                    />
 
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
+                  {/* 📱 MOBILE */}
+                  <div className="md:hidden space-y-2">
+
+                    {/* PRINCIPAL */}
+                    <div
+                      onClick={() => openModal(section.images, 0)}
+                      className="relative h-[240px] rounded-2xl overflow-hidden cursor-pointer group"
+                    >
+                      <Image
+                        src={section.images[0]}
+                        alt=""
+                        fill
+                        sizes="100vw"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition" />
+
+                      {/* overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <div className="bg-white/90 px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+                          Ver fotos
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4 MINIATURAS */}
+                    <div className="grid grid-cols-2 gap-2">
+
+                      {section.images.slice(1, 5).map((img, i) => (
+                        <div
+                          key={i}
+                          onClick={() => openModal(section.images, i + 1)}
+                          className="relative h-[110px] rounded-xl overflow-hidden cursor-pointer group"
+                        >
+                          <Image
+                            src={img}
+                            alt=""
+                            fill
+                            sizes="50vw"
+                            className="object-cover transition duration-500 group-hover:scale-105"
+                          />
+
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition" />
+
+                          <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition">
+                            <span className="bg-white/90 text-black text-[10px] px-2 py-1 rounded-full font-medium">
+                              Ver
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+
+                    </div>
+
                   </div>
 
-                  {/* SECUNDARIAS */}
-                  {section.images.slice(1).map((img, i) => (
+                  {/* 💻 DESKTOP */}
+                  <div className="hidden md:grid grid-cols-2 gap-4">
+
+                    {/* PRINCIPAL */}
+                    <div
+                      onClick={() => openModal(section.images, 0)}
+                      className="col-span-2 relative h-[350px] rounded-xl overflow-hidden cursor-pointer group active:scale-[0.98] transition"
+                    >
+                      <Image
+                        src={section.images[0]}
+                        alt=""
+                        fill
+                        sizes="100vw"
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
+                    </div>
+
+                    {/* SECUNDARIAS */}
+                    {section.images.slice(1).map((img, i) => (
+                      <div
+                        key={i}
+                        onClick={() => openModal(section.images, i + 1)}
+                        className="relative h-[200px] rounded-xl overflow-hidden cursor-pointer group active:scale-[0.98] transition"
+                      >
+                        <Image
+                          src={img}
+                          alt=""
+                          fill
+                          sizes="(max-width:768px) 50vw, 25vw"
+                          className="object-cover transition duration-500 group-hover:scale-105"
+                        />
+
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
+
+                        {/* hint */}
+                        <div className="absolute bottom-2 left-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
+                          Ver
+                        </div>
+                      </div>
+                    ))}
+
+                  </div>
+
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+
+                  {section.images.map((img, i) => (
                     <div
                       key={i}
-                      onClick={() => openModal(section.images, i + 1)}
-                      className="relative h-[160px] md:h-[200px] rounded-xl overflow-hidden cursor-pointer group active:scale-[0.98] transition"
+                      onClick={() => openModal(section.images, i)}
+                      className="relative h-[220px] md:h-[250px] rounded-xl overflow-hidden cursor-pointer group active:scale-[0.98] transition"
                     >
                       <Image
                         src={img}
                         alt=""
                         fill
-                        sizes="(max-width:768px) 50vw, 25vw"
+                        sizes="(max-width:768px) 50vw, 33vw"
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />
 
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
-
-                      {/* hint */}
-                      <div className="absolute bottom-2 left-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
-                        Ver
-                      </div>
                     </div>
                   ))}
-                </>
-              ) : (
-                section.images.map((img, i) => (
-                  <div
-                    key={i}
-                    onClick={() => openModal(section.images, i)}
-                    className="relative h-[220px] md:h-[250px] rounded-xl overflow-hidden cursor-pointer group active:scale-[0.98] transition"
-                  >
-                    <Image
-                      src={img}
-                      alt=""
-                      fill
-                      sizes="(max-width:768px) 50vw, 33vw"
-                      className="object-cover transition duration-500 group-hover:scale-105"
-                    />
 
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
-                  </div>
-                ))
+                </div>
               )}
 
             </div>
