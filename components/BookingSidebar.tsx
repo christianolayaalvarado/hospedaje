@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import CalendarAirbnb from "./CalendarAirbnb";
+import { getPrecioPorDia } from "@/lib/pricing";
 
 type Props = {
   startDate: Date | null;
@@ -20,11 +21,7 @@ export default function BookingSidebar({
   const [open, setOpen] = useState(false);
 
   // 💰 PRECIO DINÁMICO
-  function getPrecioPorDia(date: Date) {
-    const day = date.getDay();
-    if (day === 0 || day === 6) return 180; // fin de semana
-    return 150; // semana
-  }
+
 
   const cleaningFee = 50;
   const serviceFee = 30;

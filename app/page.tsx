@@ -6,6 +6,7 @@ import { useState } from "react";
 import MaterialIcon from "@/components/MaterialIcon";
 import BookingSidebar from "@/components/BookingSidebar";
 import CalendarAirbnb from "@/components/CalendarAirbnb";
+import { getPrecioPorDia } from "@/lib/pricing";
 
 export default function Home() {
   const router = useRouter();
@@ -25,11 +26,7 @@ export default function Home() {
   const [openServicios, setOpenServicios] = useState(false);
 
   // 💰 PRECIO DINÁMICO
-  function getPrecioPorDia(date: Date) {
-    const day = date.getDay();
-    if (day === 0 || day === 6) return 180;
-    return 150;
-  }
+  
 
   const servicios = [
     { icon: "wifi", label: "Wifi" },
