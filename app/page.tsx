@@ -75,25 +75,31 @@ export default function Home() {
 
             {/* PRINCIPAL */}
             <div
-              className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden"
-              onClick={() => router.push("/tour")}
-            >
-              <Image
-                src={images[0]}
-                alt=""
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                priority
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
-            </div>
+  className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden active:scale-[.97] transition duration-200"
+  onClick={() => router.push("/tour")}
+>
+  <Image
+    src={images[0]}
+    alt=""
+    fill
+    className="object-cover transition duration-700 group-hover:scale-110"
+    priority
+  />
+
+  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition" />
+
+  <div className="absolute inset-0 flex items-center justify-center">
+    <div className="backdrop-blur-md bg-white/20 text-white px-6 py-3 rounded-xl opacity-0 group-hover:opacity-100 transition border border-white/30">
+      Ver recorrido completo →
+    </div>
+  </div>
+</div>
 
             {/* SECUNDARIAS */}
             {images.slice(1, 5).map((img, i) => (
               <div
                 key={i}
-                className="relative cursor-pointer group overflow-hidden"
+                className="relative cursor-pointer group overflow-hidden  active:scale-[.98] transition"
                 onClick={() => router.push("/tour")}
               >
                 <Image
@@ -103,7 +109,13 @@ export default function Home() {
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover transition duration-500 group-hover:scale-[1.05]"
                 />
+                {/* Overlay oscuro */ }
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition" />
+
+                {/* Texto pequeño */}
+  <div className="absolute bottom-2 left-2 text-white text-sm opacity-0 group-hover:opacity-100 transition">
+    Ver más
+  </div>
               </div>
             ))}
           </div>
