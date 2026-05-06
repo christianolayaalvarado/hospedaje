@@ -14,7 +14,6 @@ export default function TourPage() {
   function scrollToSection(id: string) {
     sectionRefs.current[id]?.scrollIntoView({
       behavior: "smooth",
-      block: "start",
     });
   }
 
@@ -45,28 +44,36 @@ export default function TourPage() {
   return (
     <div className="bg-white">
 
-      {/* 🔙 BOTÓN VOLVER (MEJORADO) */}
-      <button
-        onClick={() => router.push("/")}
-        className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-2 rounded-full shadow-md hover:scale-105 active:scale-95 transition"
-      >
-        ← <span className="text-sm">Volver</span>
-      </button>
+      {/* 🔝 HEADER */}
+      <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
 
-      {/* 🔥 HEADER */}
-      <div className="text-center py-10">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        {/* 🔙 BOTÓN VOLVER */}
+        <button
+          onClick={() => router.push("/")}
+          className="flex items-center gap-2 text-gray-600 hover:text-black transition"
+        >
+          <span className="text-xl">←</span>
+          <span className="text-sm font-medium">Volver</span>
+        </button>
+
+        {/* 🔥 TÍTULO */}
+        <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-center">
           Recorrido Fotográfico
         </h1>
+
+        {/* espacio balance */}
+        <div className="w-[80px]" />
       </div>
 
-      {/* 🔥 NAVBAR MINIATURAS (FIX MOBILE) */}
-      <div className="sticky top-0 z-40 bg-white border-b py-4">
-
-        <div className="relative">
+      {/* 🔥 NAVBAR MINIATURAS */}
+      <div
+        id="tour-navbar"
+        className="sticky top-0 z-40 bg-white border-b"
+      >
+        <div className="max-w-6xl mx-auto relative">
 
           {/* SCROLL */}
-          <div className="flex gap-4 overflow-x-auto px-4 snap-x snap-mandatory">
+          <div className="flex gap-4 overflow-x-auto px-4 py-4 snap-x snap-mandatory">
 
             {gallerySections.map((section) => (
               <button
@@ -93,9 +100,8 @@ export default function TourPage() {
 
           </div>
 
-          {/* FADE DERECHO (indica scroll) */}
+          {/* fade scroll */}
           <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent" />
-
         </div>
       </div>
 
@@ -108,7 +114,7 @@ export default function TourPage() {
             ref={(el) => {
               sectionRefs.current[section.id] = el;
             }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-8"
+            className="grid grid-cols-1 md:grid-cols-4 gap-8 scroll-mt-40 md:scroll-mt-48"
           >
 
             {/* 🔹 INFO */}
@@ -142,7 +148,6 @@ export default function TourPage() {
                       className="object-cover transition duration-500 group-hover:scale-105"
                     />
 
-                    {/* overlay */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
                   </div>
 
@@ -163,7 +168,7 @@ export default function TourPage() {
 
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
 
-                      {/* mini hint */}
+                      {/* hint */}
                       <div className="absolute bottom-2 left-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
                         Ver
                       </div>
@@ -201,7 +206,7 @@ export default function TourPage() {
       {activeIndex !== null && (
         <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
 
-          {/* CERRAR */}
+          {/* cerrar */}
           <button
             onClick={closeModal}
             className="absolute top-6 right-6 text-white text-2xl hover:scale-110 transition"
@@ -209,7 +214,7 @@ export default function TourPage() {
             ✕
           </button>
 
-          {/* IMAGEN */}
+          {/* imagen */}
           <div className="relative w-[90vw] h-[80vh]">
             <Image
               src={activeImages[activeIndex]}
@@ -219,7 +224,7 @@ export default function TourPage() {
             />
           </div>
 
-          {/* NAV */}
+          {/* navegación */}
           <button
             onClick={prev}
             className="absolute left-4 md:left-6 text-white text-4xl hover:scale-110 transition"
