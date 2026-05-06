@@ -89,6 +89,7 @@ export default function TourPage() {
                     sizes="112px"
                     className="object-cover transition duration-300 group-hover:scale-105"
                   />
+
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
                 </div>
 
@@ -114,7 +115,7 @@ export default function TourPage() {
             ref={(el) => {
               sectionRefs.current[section.id] = el;
             }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-8 scroll-mt-48 md:scroll-mt-56"
+            className="grid grid-cols-1 md:grid-cols-4 gap-8 scroll-mt-40 md:scroll-mt-48"
           >
 
             {/* 🔹 INFO */}
@@ -135,8 +136,7 @@ export default function TourPage() {
 
               {section.images.length >= 5 ? (
                 <>
-
-                  {/* 📱 MOBILE */}
+                  {/* ================= MOBILE ================= */}
                   <div className="md:hidden space-y-2">
 
                     {/* PRINCIPAL */}
@@ -152,14 +152,7 @@ export default function TourPage() {
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />
 
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition" />
-
-                      {/* overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                        <div className="bg-white/90 px-4 py-2 rounded-full text-sm font-medium shadow-lg">
-                          Ver fotos
-                        </div>
-                      </div>
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition" />
                     </div>
 
                     {/* 4 MINIATURAS */}
@@ -179,8 +172,9 @@ export default function TourPage() {
                             className="object-cover transition duration-500 group-hover:scale-105"
                           />
 
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition" />
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition" />
 
+                          {/* hint */}
                           <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition">
                             <span className="bg-white/90 text-black text-[10px] px-2 py-1 rounded-full font-medium">
                               Ver
@@ -193,7 +187,7 @@ export default function TourPage() {
 
                   </div>
 
-                  {/* 💻 DESKTOP */}
+                  {/* ================= DESKTOP ================= */}
                   <div className="hidden md:grid grid-cols-2 gap-4">
 
                     {/* PRINCIPAL */}
@@ -237,7 +231,6 @@ export default function TourPage() {
                     ))}
 
                   </div>
-
                 </>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
