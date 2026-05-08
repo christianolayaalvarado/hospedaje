@@ -31,6 +31,7 @@ type Props = {
 
 export default function CalendarAirbnb({
   onChange,
+  getPrecioPorDia,
 }: Props) {
 
   // =========================================================
@@ -197,10 +198,15 @@ export default function CalendarAirbnb({
             gap-8
             md:gap-10
             justify-center
+            items-start
           `,
 
           month:
-            "space-y-4 w-full",
+            `
+            space-y-4
+            w-full
+            min-w-0
+          `,
 
           // =========================================================
           // 🔥 HEADER MES
@@ -212,7 +218,9 @@ export default function CalendarAirbnb({
             flex
             items-center
             justify-center
+
             py-4
+            px-10
           `,
 
           caption_label:
@@ -223,14 +231,14 @@ export default function CalendarAirbnb({
           `,
 
           // =========================================================
-          // 🔥 FLECHAS MÁS ABAJO Y CENTRADAS
+          // 🔥 FLECHAS
           // =========================================================
 
           nav:
             `
             absolute
             inset-x-0
-            top-10
+            top-5
             flex
             items-center
             justify-between
@@ -241,11 +249,15 @@ export default function CalendarAirbnb({
             `
             h-8
             w-8
+
             flex
             items-center
             justify-center
+
             rounded-full
+
             hover:bg-gray-100
+
             transition
           `,
 
@@ -267,10 +279,14 @@ export default function CalendarAirbnb({
 
           head_cell:
             `
-            flex-1
+            w-12
+            md:w-14
+
             text-center
+
             text-[11px]
             md:text-xs
+
             font-medium
             text-gray-500
           `,
@@ -284,11 +300,14 @@ export default function CalendarAirbnb({
 
           cell:
             `
-            flex-1
+            w-12
+            md:w-14
+
             text-center
             relative
             p-0
             text-sm
+
             focus-within:relative
             focus-within:z-20
           `,
@@ -308,10 +327,11 @@ export default function CalendarAirbnb({
 
           day_button:
             `
-            h-9
-            w-9
-            md:h-10
-            md:w-10
+            h-12
+            w-12
+
+            md:h-14
+            md:w-14
 
             mx-auto
 
@@ -326,6 +346,7 @@ export default function CalendarAirbnb({
             z-20
 
             flex
+            flex-col
             items-center
             justify-center
 
@@ -336,16 +357,43 @@ export default function CalendarAirbnb({
             "w-full",
         }}
 
-        formatters={{
+        components={{
+          DayContent: ({ date }) => {
 
-          formatDay: (date) => {
+            const precio =
+              getPrecioPorDia(date);
 
-            return date
-              .getDate()
-              .toString();
+            return (
 
+              <div
+                className="
+                  flex
+                  flex-col
+                  items-center
+                  justify-center
+                  leading-none
+                "
+              >
+
+                <span className="text-[13px] md:text-sm">
+                  {date.getDate()}
+                </span>
+
+                <span
+                  className="
+                    text-[9px]
+                    md:text-[10px]
+                    text-gray-500
+                    mt-1
+                  "
+                >
+                  S/{precio}
+                </span>
+
+              </div>
+
+            );
           },
-
         }}
       />
 

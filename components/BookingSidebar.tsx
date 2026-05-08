@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+
 import CalendarAirbnb from "./CalendarAirbnb";
 import { getPrecioPorDia } from "@/lib/pricing";
 import MobileBookingBar from "./MobileBookingBar";
@@ -30,7 +31,7 @@ export default function BookingSidebar({
   const serviceFee = 30;
 
   // =========================================================
-  // 🛏️ NOCHES
+  // 🌙 NOCHES
   // =========================================================
 
   const nights =
@@ -38,7 +39,10 @@ export default function BookingSidebar({
       ? Math.max(
           0,
           Math.ceil(
-            (endDate.getTime() - startDate.getTime()) /
+            (
+              endDate.getTime() -
+              startDate.getTime()
+            ) /
               (1000 * 60 * 60 * 24)
           )
         )
@@ -76,7 +80,7 @@ export default function BookingSidebar({
       : 0;
 
   // =========================================================
-  // 🔥 LOCK SCROLL
+  // 🔒 BODY LOCK
   // =========================================================
 
   useEffect(() => {
@@ -95,7 +99,7 @@ export default function BookingSidebar({
     <>
 
       {/* ========================================================= */}
-      {/* 💻 DESKTOP */}
+      {/* 💻 DESKTOP SIDEBAR */}
       {/* ========================================================= */}
 
       <div className="hidden md:block sticky top-24">
@@ -140,11 +144,9 @@ export default function BookingSidebar({
                 </p>
 
                 <p className="font-medium">
-
                   {startDate
                     ? startDate.toLocaleDateString("es-PE")
                     : "Agregar fecha"}
-
                 </p>
 
               </div>
@@ -156,11 +158,9 @@ export default function BookingSidebar({
                 </p>
 
                 <p className="font-medium">
-
                   {endDate
                     ? endDate.toLocaleDateString("es-PE")
                     : "Agregar fecha"}
-
                 </p>
 
               </div>
@@ -233,7 +233,7 @@ export default function BookingSidebar({
       />
 
       {/* ========================================================= */}
-      {/* 🪟 MODAL */}
+      {/* 🔥 MODAL / BOTTOM SHEET */}
       {/* ========================================================= */}
 
       <AnimatePresence>
@@ -242,118 +242,212 @@ export default function BookingSidebar({
 
           <>
 
-            {/* overlay */}
+            {/* OVERLAY */}
             <motion.div
-              className="fixed inset-0 bg-black/40 z-50"
+              className="
+                fixed inset-0
+                bg-black/40
+                backdrop-blur-sm
+                z-50
+              "
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
             />
 
-            {/* modal */}
+            {/* BOTTOM SHEET */}
             <motion.div
+
               className="
-                fixed inset-0 z-50
-                flex items-end md:items-center
+                fixed inset-0
+                z-50
+
+                flex
+                items-end
+                md:items-center
                 justify-center
+
+                md:p-4
               "
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30 }}
+
+              initial={{
+                opacity: 0,
+                y:
+                  typeof window !== "undefined" &&
+                  window.innerWidth < 768
+                    ? 80
+                    : 0,
+                scale:
+                  typeof window !== "undefined" &&
+                  window.innerWidth >= 768
+                    ? 0.96
+                    : 1,
+              }}
+
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+              }}
+
+              exit={{
+                opacity: 0,
+                y:
+                  typeof window !== "undefined" &&
+                  window.innerWidth < 768
+                    ? 80
+                    : 0,
+                scale:
+                  typeof window !== "undefined" &&
+                  window.innerWidth >= 768
+                    ? 0.96
+                    : 1,
+              }}
+
+              transition={{
+                duration: 0.25,
+                ease: "easeOut",
+              }}
             >
 
               <div
-                onClick={(e) => e.stopPropagation()}
                 className="
                   bg-white
+
                   w-full
                   md:max-w-3xl
-
-                  rounded-t-3xl
-                  md:rounded-2xl
-
-                  shadow-2xl
-
-                  flex flex-col
 
                   h-[92vh]
                   md:h-auto
 
+                  rounded-t-[32px]
+                  md:rounded-3xl
+
+                  shadow-2xl
+
+                  flex
+                  flex-col
+
                   overflow-hidden
+
+                  pb-[env(safe-area-inset-bottom)]
                 "
+                onClick={(e) =>
+                  e.stopPropagation()
+                }
               >
 
                 {/* ========================================================= */}
-                {/* HEADER */}
+                {/* 🔥 DRAG HANDLE */}
                 {/* ========================================================= */}
 
-                <div className="
-                  flex justify-between items-start
-                  p-5 md:p-6
-                  border-b
-                  shrink-0
-                ">
+                <div className="pt-3 md:hidden">
 
-                  <div className="pr-4">
-
-                    <p className="
-                      text-lg md:text-2xl
-                      font-semibold
-                      leading-tight
-                    ">
-
-                      {nights > 0
-                        ? `${nights} noche${
-                            nights > 1 ? "s" : ""
-                          } en San Miguel`
-                        : "Selecciona fechas"}
-
-                    </p>
-
-                    <p className="text-sm text-gray-500 mt-1">
-
-                      {startDate && endDate
-                        ? `${startDate.toLocaleDateString("es-PE")} - ${endDate.toLocaleDateString("es-PE")}`
-                        : "Agrega tus fechas de viaje"}
-
-                    </p>
-
-                  </div>
-
-                  <button
-                    onClick={() => setOpen(false)}
+                  <div
                     className="
-                      text-xl
-                      h-10 w-10
-                      flex items-center justify-center
+                      w-12
+                      h-1.5
                       rounded-full
-                      hover:bg-gray-100
-                      transition
-                      shrink-0
+                      bg-gray-300
+                      mx-auto
                     "
-                  >
-                    ✕
-                  </button>
+                  />
 
                 </div>
 
                 {/* ========================================================= */}
-                {/* CALENDARIO */}
+                {/* 🔥 HEADER */}
                 {/* ========================================================= */}
 
-                <div className="
-                  flex-1
-                  overflow-y-auto
-                  px-4 md:px-6
-                  py-4
-                ">
+                <div
+                  className="
+                    sticky
+                    top-0
+                    z-20
+
+                    bg-white/95
+                    backdrop-blur-md
+
+                    border-b
+
+                    px-4
+                    md:px-6
+
+                    pt-4
+                    pb-4
+                  "
+                >
+
+                  <div className="flex justify-between items-start gap-4">
+
+                    <div>
+
+                      <p
+                        className="
+                          text-lg
+                          md:text-2xl
+                          font-semibold
+                          leading-tight
+                        "
+                      >
+
+                        {nights > 0
+                          ? `${nights} noche${
+                              nights > 1
+                                ? "s"
+                                : ""
+                            } en San Miguel`
+                          : "Selecciona fechas"}
+
+                      </p>
+
+                      <p className="text-sm text-gray-500 mt-1">
+
+                        {startDate && endDate
+                          ? `${startDate.toLocaleDateString("es-PE")} - ${endDate.toLocaleDateString("es-PE")}`
+                          : "Agrega tus fechas"}
+
+                      </p>
+
+                    </div>
+
+                    <button
+                      onClick={() => setOpen(false)}
+                      className="
+                        text-xl
+                        hover:scale-110
+                        transition
+                      "
+                    >
+                      ✕
+                    </button>
+
+                  </div>
+
+                </div>
+
+                {/* ========================================================= */}
+                {/* 📅 CALENDARIO */}
+                {/* ========================================================= */}
+
+                <div
+                  className="
+                    flex-1
+                    overflow-y-auto
+                    overscroll-contain
+
+                    px-4
+                    md:px-6
+
+                    py-5
+                  "
+                >
 
                   <CalendarAirbnb
                     onChange={({ from, to }) => {
 
                       setStartDate(from ?? null);
-
                       setEndDate(to ?? null);
 
                     }}
@@ -363,29 +457,40 @@ export default function BookingSidebar({
                 </div>
 
                 {/* ========================================================= */}
-                {/* FOOTER */}
+                {/* 🔘 FOOTER */}
                 {/* ========================================================= */}
 
-                <div className="
-                  border-t
-                  p-4 md:p-6
-                  flex justify-between items-center
-                  bg-white
-                  shrink-0
-                ">
+                <div
+                  className="
+                    sticky
+                    bottom-0
+
+                    bg-white/95
+                    backdrop-blur-md
+
+                    border-t
+
+                    px-4
+                    py-4
+
+                    flex
+                    justify-between
+                    items-center
+                    gap-4
+                  "
+                >
 
                   <button
                     onClick={() => {
 
                       setStartDate(null);
-
                       setEndDate(null);
 
                     }}
                     className="
                       underline
                       text-sm
-                      font-medium
+                      whitespace-nowrap
                     "
                   >
                     Limpiar fechas
@@ -396,9 +501,18 @@ export default function BookingSidebar({
                     className="
                       bg-black
                       text-white
-                      px-6 py-3
+
+                      px-6
+                      py-3
+
                       rounded-xl
+
                       font-medium
+
+                      hover:opacity-90
+                      active:scale-95
+
+                      transition
                     "
                   >
                     Aplicar
