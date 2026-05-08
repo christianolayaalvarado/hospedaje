@@ -19,7 +19,8 @@ export default function CalendarAirbnb({
   onChange,
 }: Props) {
 
-  const [range, setRange] = useState<DateRange | undefined>();
+  const [range, setRange] =
+    useState<DateRange | undefined>();
 
   const [hoveredDate, setHoveredDate] =
     useState<Date | undefined>();
@@ -60,12 +61,18 @@ export default function CalendarAirbnb({
       : undefined;
 
   return (
-    <div className="bg-white">
-      <DayPicker
+    <div className="bg-white w-full">
 
+      <DayPicker
         mode="range"
 
-        numberOfMonths={2}
+        // 🔥 MOBILE = 1 mes | DESKTOP = 2 meses
+        numberOfMonths={
+          typeof window !== "undefined" &&
+          window.innerWidth < 768
+            ? 1
+            : 2
+        }
 
         selected={range}
 
@@ -104,45 +111,83 @@ export default function CalendarAirbnb({
 
         classNames={{
 
+          // 🔥 meses responsive
           months:
-            "flex flex-col md:flex-row gap-10 justify-center",
+            "flex flex-col md:flex-row gap-6 md:gap-10 justify-center",
 
           month:
-            "space-y-4",
+            "space-y-4 w-full",
 
+          // 🔥 header mes
           caption:
-            "relative flex items-center justify-center pt-1 pb-4 text-base font-semibold",
+            "relative flex items-center justify-center pb-4 pt-2",
 
           caption_label:
-            "text-base font-semibold",
+            "text-sm md:text-base font-semibold",
 
+          // 🔥 flechas mejor alineadas
           nav:
-            "absolute inset-x-0 top-0 flex items-center justify-between",
+            "absolute inset-x-0 top-1 flex items-center justify-between px-1",
 
           nav_button:
-            "h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition",
+            `
+              h-8 w-8
+              flex items-center justify-center
+              rounded-full
+              hover:bg-gray-100
+              transition
+            `,
 
+          // 🔥 tabla
           table:
             "w-full border-collapse",
 
           head_row:
-            "flex",
+            "flex justify-between",
 
           head_cell:
-            "w-10 text-xs font-medium text-gray-500",
+            `
+              flex-1
+              text-center
+              text-[11px]
+              md:text-xs
+              font-medium
+              text-gray-500
+            `,
 
           row:
-            "flex w-full mt-2",
+            "flex w-full mt-2 justify-between",
 
           cell:
-            "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
+            `
+              relative
+              flex-1
+              p-0
+              text-center
+              text-sm
+              focus-within:relative
+              focus-within:z-20
+            `,
 
-          // 🔥 necesario para hover UX
+          // 🔥 hover UX
           day:
-            "calendar-day",
+            "calendar-day flex items-center justify-center",
 
+          // 🔥 tamaño responsive
           day_button:
-            "h-10 w-10 rounded-full transition-all duration-200 font-normal relative z-20 flex items-center justify-center",
+            `
+              h-10 w-10
+              md:h-11 md:w-11
+              rounded-full
+              transition-all
+              duration-200
+              font-normal
+              relative
+              z-20
+              flex items-center justify-center
+              mx-auto
+              text-sm
+            `,
 
           month_grid:
             "w-full",
@@ -156,6 +201,7 @@ export default function CalendarAirbnb({
 
         }}
       />
+
     </div>
   );
 }
