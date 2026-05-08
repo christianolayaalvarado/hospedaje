@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +15,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hospedaje Rich & Lissa B",
-  description: "Reserva tu estadía",
+  title: "Hospedaje Rich & Eissa B",
+  description: "Reserva tu estadía en un hospedaje hogareño y acogedor en San Miguel",
+  
+  openGraph: {
+  title: "Hospedaje Rich & Eissa B",
+  description:
+    "Reserva tu estadía en un hospedaje hogareño y acogedor en San Miguel, Lima.",
+  images: ["/og-image.jpg"],
+},
+
+
 };
 
 export default function RootLayout({
@@ -37,6 +48,8 @@ export default function RootLayout({
       </head>
 
       <body className="font-sans bg-white text-gray-900">
+        <Navbar />
+        <WhatsAppButton />
         {children}
       </body>
     </html>

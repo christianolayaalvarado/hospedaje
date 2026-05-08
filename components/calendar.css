@@ -1,0 +1,43 @@
+/* =========================
+   🟠 RANGO CENTRAL
+========================= */
+
+.rdp-range_middle {
+  background-color: rgba(220, 38, 38, 0.12);
+}
+
+/* =========================
+   🔴 INICIO DEL RANGO
+========================= */
+
+.rdp-range_start {
+  background: none !important;
+}
+
+.rdp-range_start button {
+  background-color: rgb(220 38 38) !important;
+  color: white !important;
+  border-radius: 9999px !important;
+}
+
+/* =========================
+   🔴 FIN DEL RANGO
+========================= */
+
+.rdp-range_end {
+  background: none !important;
+}
+
+.rdp-range_end button {
+  background-color: rgb(220 38 38) !important;
+  color: white !important;
+  border-radius: 9999px !important;
+}
+
+/* =========================
+   🟡 PREVIEW HOVER
+========================= */
+
+.rdp-preview {
+  background-color: rgba(220, 38, 38, 0.08);
+}

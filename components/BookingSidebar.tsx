@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import CalendarAirbnb from "./CalendarAirbnb";
 import { getPrecioPorDia } from "@/lib/pricing";
+import MobileBookingBar from "./MobileBookingBar";
 
 type Props = {
   startDate: Date | null;
@@ -63,7 +64,7 @@ export default function BookingSidebar({
 
   return (
     <>
-      <div className="sticky top-24">
+      <div className="hidden md:block sticky top-24">
         <div className="border rounded-2xl p-6 shadow-xl space-y-5 bg-white">
           
           {/* 💰 PRECIO HEADER */}
@@ -133,6 +134,14 @@ export default function BookingSidebar({
         </div>
       </div>
 
+      {/* 📱 MOBILE BOOKING BAR */}
+      <MobileBookingBar
+        price={getPrecioPorDia(new Date())}
+        startDate={startDate}
+        endDate={endDate}
+        onOpen={() => setOpen(true)}
+      />
+
       {/* 🪟 MODAL */}
       <AnimatePresence>
         {open && (
@@ -157,14 +166,18 @@ export default function BookingSidebar({
               >
                 <div className="flex justify-between items-center mb-4">
                   <div>
-                    <p className="font-semibold text-lg">
-                      Selecciona tus fechas
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Precio dinámico por día
-                    </p>
-                  </div>
+                  <p className="text-2xl font-semibold leading-none">
+                    {nights > 0
+                    ? `${nights} noche${nights > 1 ? "s" : ""} en San Miguel · Hospedaje R&E`
+                    : "Selecciona fechas"}
+                  </p>
 
+                  <p className="text-sm text-gray-500 mt-1">
+                    {startDate && endDate
+                      ? `${startDate.toLocaleDateString("es-PE")} - ${endDate.toLocaleDateString("es-PE")}`
+                      : "Agrega tus fechas de viaje"}
+                  </p>
+                </div>
                   <button onClick={() => setOpen(false)} className="text-xl">
                     ✕
                   </button>
@@ -201,6 +214,7 @@ export default function BookingSidebar({
           </>
         )}
       </AnimatePresence>
+      
     </>
   );
 }
