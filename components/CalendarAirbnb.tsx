@@ -1,128 +1,77 @@
 "use client";
 
-import {
-  DayPicker,
-  DateRange,
-} from "react-day-picker";
-
+import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
-import {
-  useState,
-  useEffect,
-} from "react";
-
+import { useState, useEffect } from "react";
 import { es } from "date-fns/locale";
 
 import "./calendar.css";
 
 type Props = {
-  onChange: (
-    range: {
-      from?: Date;
-      to?: Date;
-    }
-  ) => void;
-
-  getPrecioPorDia: (
-    date: Date
-  ) => number;
+  onChange: (range: { from?: Date; to?: Date }) => void;
+  getPrecioPorDia: (date: Date) => number;
 };
 
 export default function CalendarAirbnb({
   onChange,
   getPrecioPorDia,
 }: Props) {
-
   // =========================================================
   // 📅 RANGE
   // =========================================================
-
-  const [range, setRange] =
-    useState<DateRange | undefined>();
+  const [range, setRange] = useState<DateRange | undefined>();
 
   // =========================================================
   // 🔥 HOVER PREVIEW
   // =========================================================
-
-  const [hoveredDate, setHoveredDate] =
-    useState<Date | undefined>();
+  const [hoveredDate, setHoveredDate] = useState<Date | undefined>();
 
   // =========================================================
   // 📱 MOBILE DETECTION
   // =========================================================
-
-  const [isMobile, setIsMobile] =
-    useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-
     function handleResize() {
-
-      setIsMobile(
-        window.innerWidth < 768
-      );
-
+      setIsMobile(window.innerWidth < 768);
     }
 
     handleResize();
 
-    window.addEventListener(
-      "resize",
-      handleResize
-    );
+    window.addEventListener("resize", handleResize);
 
-    return () => {
-
-      window.removeEventListener(
-        "resize",
-        handleResize
-      );
-
-    };
-
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // =========================================================
-  // 🔥 SELECT
+  // 🔥 SELECT RANGE
   // =========================================================
-
-  function handleSelect(
-    r: DateRange | undefined
-  ) {
-
+  function handleSelect(r: DateRange | undefined) {
     setRange(r);
 
-    // 🔥 limpia preview al completar rango
     if (r?.from && r?.to) {
       setHoveredDate(undefined);
     }
 
     if (r?.from) {
-
       onChange({
         from: r.from,
         to: r.to,
       });
-
     }
-
   }
 
   // =========================================================
-  // 🔥 PREVIEW RANGE TIPO AIRBNB
+  // 🔥 PREVIEW RANGE AIRBNB STYLE
   // =========================================================
-
   const previewRange =
-    range?.from &&
-    hoveredDate &&
-    !range?.to
+    range?.from && hoveredDate && !range?.to
       ? {
           from:
             hoveredDate < range.from
               ? hoveredDate
               : range.from,
-
           to:
             hoveredDate > range.from
               ? hoveredDate
@@ -131,35 +80,18 @@ export default function CalendarAirbnb({
       : undefined;
 
   return (
-
     <div className="bg-white w-full overflow-hidden">
-
       <DayPicker
-
         locale={es}
-
         mode="range"
-
-        // 🔥 MOBILE = 1 MES
-        // 🔥 DESKTOP = 2 MESES
-        numberOfMonths={
-          isMobile ? 1 : 2
-        }
-
+        numberOfMonths={isMobile ? 1 : 2}
         selected={range}
-
         onSelect={handleSelect}
 
-        // 🔥 hover preview
         onDayMouseEnter={(date) => {
-
-          if (
-            range?.from &&
-            !range?.to
-          ) {
+          if (range?.from && !range?.to) {
             setHoveredDate(date);
           }
-
         }}
 
         modifiers={{
@@ -167,31 +99,15 @@ export default function CalendarAirbnb({
         }}
 
         modifiersClassNames={{
-
-          range_start:
-            "rdp-range_start",
-
-          range_end:
-            "rdp-range_end",
-
-          range_middle:
-            "rdp-range_middle",
-
-          preview:
-            "rdp-preview",
-
-          today:
-            "border border-black",
+          range_start: "rdp-range_start",
+          range_end: "rdp-range_end",
+          range_middle: "rdp-range_middle",
+          preview: "rdp-preview",
+          today: "border border-black",
         }}
 
         classNames={{
-
-          // =========================================================
-          // 🔥 MESES RESPONSIVE
-          // =========================================================
-
-          months:
-            `
+          months: `
             flex
             flex-col
             md:flex-row
@@ -201,41 +117,28 @@ export default function CalendarAirbnb({
             items-start
           `,
 
-          month:
-            `
+          month: `
             space-y-4
             w-full
             min-w-0
           `,
 
-          // =========================================================
-          // 🔥 HEADER MES
-          // =========================================================
-
-          caption:
-            `
+          caption: `
             relative
             flex
             items-center
             justify-center
-
             py-4
             px-10
           `,
 
-          caption_label:
-            `
+          caption_label: `
             text-sm
             md:text-base
             font-semibold
           `,
 
-          // =========================================================
-          // 🔥 FLECHAS
-          // =========================================================
-
-          nav:
-            `
+          nav: `
             absolute
             inset-x-0
             top-5
@@ -245,155 +148,97 @@ export default function CalendarAirbnb({
             px-2
           `,
 
-          nav_button:
-            `
+          nav_button: `
             h-8
             w-8
-
             flex
             items-center
             justify-center
-
             rounded-full
-
             hover:bg-gray-100
-
             transition
           `,
 
-          // =========================================================
-          // 🔥 TABLA
-          // =========================================================
+          table: "w-full border-collapse",
 
-          table:
-            `
-            w-full
-            border-collapse
-          `,
+          head_row: "flex w-full",
 
-          head_row:
-            `
-            flex
-            w-full
-          `,
-
-          head_cell:
-            `
+          head_cell: `
             w-19
             md:w-10
-
             text-center
-
             text-[11px]
             md:text-xs
-
             font-medium
             text-gray-500
           `,
 
-          row:
-            `
-            flex
-            w-full
-            mt-2
-          `,
+          row: "flex w-full mt-2",
 
-          cell:
-            `
+          cell: `
             w-9
             md:w-10
-
             text-center
             relative
             p-0
             text-sm
-
             focus-within:relative
             focus-within:z-20
           `,
 
-          // =========================================================
-          // 🔥 DÍAS
-          // =========================================================
+          day: "calendar-day",
 
-          day:
-            `
-            calendar-day
+          day_button: `
+            h-9 w-9
+            md:h-10 md:w-10
+            mx-auto
+            rounded-full
+            transition-all
+            duration-200
+            font-normal
+            relative
+            z-20
+            flex
+            flex-col
+            items-center
+            justify-center
+            text-sm
           `,
 
-          // =========================================================
-          // 🔥 BOTONES DÍA
-          // =========================================================
-
-          day_button:
-  `
-    h-9 w-9
-    md:h-10 md:w-10
-
-    mx-auto
-
-    rounded-full
-
-    transition-all
-    duration-200
-
-    font-normal
-
-    relative
-    z-20
-
-    flex
-    items-center
-    justify-center
-
-    text-sm
-  `,
-
-          month_grid:
-            "w-full",
+          month_grid: "w-full",
         }}
 
+        // =========================================================
+        // 🔥 CUSTOM DAY (FIX PRINCIPAL)
+        // =========================================================
         components={{
-          DayContent: ({ date }) => {
+          DayButton: ({ day, children, ...buttonProps }: any) => {
+            const date: Date = day.date;
 
-            const precio =
-              getPrecioPorDia(date);
+            const precio = getPrecioPorDia(date);
 
             return (
+              <button {...buttonProps} type="button">
+                {/* número del día */}
+                <div>{children}</div>
 
-              <div
-                className="
-                  flex
-                  flex-col
-                  items-center
-                  justify-center
-                  leading-none
-                "
-              >
-
-                <span className="text-[13px] md:text-sm">
-                  {date.getDate()}
-                </span>
-
-                <span
+                {/* precio estilo Airbnb */}
+                <div
                   className="
-                    text-[9px]
-                    md:text-[10px]
+                    text-[8px]
+                    md:text-[9px]
                     text-gray-500
-                    mt-1
+                    leading-none
+                    mt-[2px]
                   "
                 >
                   S/{precio}
-                </span>
-
-              </div>
-
+                </div>
+              </button>
             );
           },
         }}
       />
-
     </div>
-
   );
 }
