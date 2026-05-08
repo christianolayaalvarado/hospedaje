@@ -279,8 +279,8 @@ export default function CalendarAirbnb({
 
           head_cell:
             `
-            w-12
-            md:w-14
+            w-19
+            md:w-10
 
             text-center
 
@@ -300,8 +300,8 @@ export default function CalendarAirbnb({
 
           cell:
             `
-            w-12
-            md:w-14
+            w-9
+            md:w-10
 
             text-center
             relative
@@ -326,32 +326,28 @@ export default function CalendarAirbnb({
           // =========================================================
 
           day_button:
-            `
-            h-12
-            w-12
+  `
+    h-9 w-9
+    md:h-10 md:w-10
 
-            md:h-14
-            md:w-14
+    mx-auto
 
-            mx-auto
+    rounded-full
 
-            rounded-full
+    transition-all
+    duration-200
 
-            transition-all
-            duration-200
+    font-normal
 
-            font-normal
+    relative
+    z-20
 
-            relative
-            z-20
+    flex
+    items-center
+    justify-center
 
-            flex
-            flex-col
-            items-center
-            justify-center
-
-            text-sm
-          `,
+    text-sm
+  `,
 
           month_grid:
             "w-full",
