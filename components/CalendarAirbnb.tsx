@@ -7,6 +7,9 @@ import { useState, useEffect } from "react";
 import { es } from "date-fns/locale";
 
 import "./calendar.css";
+import { bookedRanges } from "@/lib/availability";
+
+const MIN_NIGHTS = 2;
 
 type Props = {
   onChange: (range: { from?: Date; to?: Date }) => void;
@@ -17,61 +20,113 @@ export default function CalendarAirbnb({
   onChange,
   getPrecioPorDia,
 }: Props) {
+
   // =========================================================
   // 📅 RANGE
   // =========================================================
-  const [range, setRange] = useState<DateRange | undefined>();
+
+  const [range, setRange] =
+    useState<DateRange | undefined>();
 
   // =========================================================
   // 🔥 HOVER PREVIEW
   // =========================================================
-  const [hoveredDate, setHoveredDate] = useState<Date | undefined>();
+
+  const [hoveredDate, setHoveredDate] =
+    useState<Date | undefined>();
 
   // =========================================================
   // 📱 MOBILE DETECTION
   // =========================================================
-  const [isMobile, setIsMobile] = useState(false);
+
+  const [isMobile, setIsMobile] =
+    useState(false);
 
   useEffect(() => {
+
     function handleResize() {
       setIsMobile(window.innerWidth < 768);
     }
 
     handleResize();
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
 
-    return () => window.removeEventListener("resize", handleResize);
+    return () =>
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+
   }, []);
 
   // =========================================================
   // 🔥 SELECT RANGE
   // =========================================================
-  function handleSelect(r: DateRange | undefined) {
+
+  function handleSelect(
+    r: DateRange | undefined
+  ) {
+
+    // =========================================================
+    // 🔥 VALIDACIÓN
+    // =========================================================
+
+    if (r?.from && r?.to) {
+
+      const nights = Math.ceil(
+        (
+          r.to.getTime() -
+          r.from.getTime()
+        ) /
+        (1000 * 60 * 60 * 24)
+      );
+
+      // mínimo de noches
+      if (nights < MIN_NIGHTS) {
+
+        alert(
+          `La estadía mínima es de ${MIN_NIGHTS} noches`
+        );
+
+        return;
+      }
+    }
+
     setRange(r);
 
+    // limpia hover
     if (r?.from && r?.to) {
       setHoveredDate(undefined);
     }
 
     if (r?.from) {
+
       onChange({
         from: r.from,
         to: r.to,
       });
+
     }
   }
 
   // =========================================================
   // 🔥 PREVIEW RANGE AIRBNB STYLE
   // =========================================================
+
   const previewRange =
-    range?.from && hoveredDate && !range?.to
+    range?.from &&
+    hoveredDate &&
+    !range?.to
       ? {
           from:
             hoveredDate < range.from
               ? hoveredDate
               : range.from,
+
           to:
             hoveredDate > range.from
               ? hoveredDate
@@ -80,18 +135,34 @@ export default function CalendarAirbnb({
       : undefined;
 
   return (
+
     <div className="bg-white w-full overflow-hidden">
+
       <DayPicker
+
         locale={es}
+
         mode="range"
-        numberOfMonths={isMobile ? 1 : 2}
+
+        numberOfMonths={
+          isMobile ? 1 : 2
+        }
+
         selected={range}
+
         onSelect={handleSelect}
 
+        disabled={bookedRanges}
+
         onDayMouseEnter={(date) => {
-          if (range?.from && !range?.to) {
+
+          if (
+            range?.from &&
+            !range?.to
+          ) {
             setHoveredDate(date);
           }
+
         }}
 
         modifiers={{
@@ -99,15 +170,27 @@ export default function CalendarAirbnb({
         }}
 
         modifiersClassNames={{
-          range_start: "rdp-range_start",
-          range_end: "rdp-range_end",
-          range_middle: "rdp-range_middle",
-          preview: "rdp-preview",
-          today: "border border-black",
+
+          range_start:
+            "rdp-range_start",
+
+          range_end:
+            "rdp-range_end",
+
+          range_middle:
+            "rdp-range_middle",
+
+          preview:
+            "rdp-preview",
+
+          today:
+            "border border-black",
         }}
 
         classNames={{
-          months: `
+
+          months:
+            `
             flex
             flex-col
             md:flex-row
@@ -117,13 +200,15 @@ export default function CalendarAirbnb({
             items-start
           `,
 
-          month: `
+          month:
+            `
             space-y-4
             w-full
             min-w-0
           `,
 
-          caption: `
+          caption:
+            `
             relative
             flex
             items-center
@@ -132,13 +217,15 @@ export default function CalendarAirbnb({
             px-10
           `,
 
-          caption_label: `
+          caption_label:
+            `
             text-sm
             md:text-base
             font-semibold
           `,
 
-          nav: `
+          nav:
+            `
             absolute
             inset-x-0
             top-5
@@ -148,7 +235,8 @@ export default function CalendarAirbnb({
             px-2
           `,
 
-          nav_button: `
+          nav_button:
+            `
             h-8
             w-8
             flex
@@ -159,11 +247,14 @@ export default function CalendarAirbnb({
             transition
           `,
 
-          table: "w-full border-collapse",
+          table:
+            "w-full border-collapse",
 
-          head_row: "flex w-full",
+          head_row:
+            "flex w-full",
 
-          head_cell: `
+          head_cell:
+            `
             w-19
             md:w-10
             text-center
@@ -173,9 +264,11 @@ export default function CalendarAirbnb({
             text-gray-500
           `,
 
-          row: "flex w-full mt-2",
+          row:
+            "flex w-full mt-2",
 
-          cell: `
+          cell:
+            `
             w-9
             md:w-10
             text-center
@@ -186,9 +279,11 @@ export default function CalendarAirbnb({
             focus-within:z-20
           `,
 
-          day: "calendar-day",
+          day:
+            "calendar-day",
 
-          day_button: `
+          day_button:
+            `
             h-9 w-9
             md:h-10 md:w-10
             mx-auto
@@ -205,36 +300,92 @@ export default function CalendarAirbnb({
             text-sm
           `,
 
-          month_grid: "w-full",
+          month_grid:
+            "w-full",
         }}
 
         // =========================================================
-        // 🔥 CUSTOM DAY (FIX PRINCIPAL)
+        // 🔥 CUSTOM DAY
         // =========================================================
+
         components={{
-          DayButton: ({ day, children, ...buttonProps }: any) => {
+
+          DayButton: ({
+            day,
+            children,
+            ...buttonProps
+          }: any) => {
+
             const date: Date = day.date;
 
-            const precio = getPrecioPorDia(date);
+            const precio =
+              getPrecioPorDia(date);
 
             return (
-              <button {...buttonProps} type="button">
-                {/* número del día */}
-                <div>{children}</div>
 
-                {/* precio estilo Airbnb */}
+              <div className="group relative">
+
+                <button
+                  {...buttonProps}
+                  type="button"
+                >
+
+                  {/* número */}
+                  <div>
+                    {children}
+                  </div>
+
+                  {/* precio */}
+                  <div
+                    className="
+                      text-[8px]
+                      md:text-[9px]
+                      text-gray-500
+                      leading-none
+                      mt-[2px]
+                    "
+                  >
+                    S/{precio}
+                  </div>
+
+                </button>
+
+                {/* tooltip */}
                 <div
                   className="
-                    text-[8px]
-                    md:text-[9px]
-                    text-gray-500
-                    leading-none
-                    mt-[2px]
+                    absolute
+                    bottom-full
+                    left-1/2
+                    -translate-x-1/2
+
+                    mb-2
+
+                    bg-black
+                    text-white
+
+                    text-[10px]
+
+                    px-2
+                    py-1
+
+                    rounded-lg
+
+                    whitespace-nowrap
+
+                    opacity-0
+                    group-hover:opacity-100
+
+                    pointer-events-none
+
+                    transition
+
+                    z-50
                   "
                 >
-                  S/{precio}
+                  S/{precio} por noche
                 </div>
-              </button>
+
+              </div>
             );
           },
         }}

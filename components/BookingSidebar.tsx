@@ -447,10 +447,19 @@ export default function BookingSidebar({
                   <CalendarAirbnb
                     onChange={({ from, to }) => {
 
-                      setStartDate(from ?? null);
-                      setEndDate(to ?? null);
+                  setStartDate(from ?? null);
+                  setEndDate(to ?? null);
 
-                    }}
+                  // 🔥 auto close al completar rango
+                  if (from && to) {
+
+                    setTimeout(() => {
+                      setOpen(false);
+                    }, 250);
+
+                  }
+
+                }}
                     getPrecioPorDia={getPrecioPorDia}
                   />
 

@@ -41,3 +41,52 @@
 .rdp-preview {
   background-color: rgba(220, 38, 38, 0.08);
 }
+
+/* =========================================================
+   🔥 DÍAS BLOQUEADOS
+========================================================= */
+
+.rdp-day_disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rdp-day_disabled button {
+  text-decoration: line-through;
+}
+
+/* =========================================================
+   🔥 HOVER MÁS SUAVE
+========================================================= */
+
+.calendar-day button {
+  transition:
+    transform .18s ease,
+    background .18s ease;
+}
+
+.calendar-day button:hover {
+  transform: scale(1.06);
+}
+
+/* =========================================================
+   🔥 FECHAS BLOQUEADAS MÁS CLARAS
+========================================================= */
+
+.rdp-day_disabled button {
+  background: rgba(0,0,0,0.04);
+}
+
+/* =========================================================
+   🔥 RANGE MÁS ELEGANTE
+========================================================= */
+
+.rdp-range_middle {
+  background: rgba(0,0,0,0.08);
+}
+
+.rdp-range_start button,
+.rdp-range_end button {
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.18);
+}
