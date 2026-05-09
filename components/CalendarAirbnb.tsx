@@ -1,19 +1,39 @@
 "use client";
 
-import { DayPicker, DateRange } from "react-day-picker";
+import {
+  DayPicker,
+  DateRange,
+} from "react-day-picker";
+
 import "react-day-picker/dist/style.css";
 
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+} from "react";
+
 import { es } from "date-fns/locale";
 
 import "./calendar.css";
-import { bookedRanges } from "@/lib/availability";
 
 const MIN_NIGHTS = 2;
 
 type Props = {
-  onChange: (range: { from?: Date; to?: Date }) => void;
-  getPrecioPorDia: (date: Date) => number;
+  onChange: (
+    range: {
+      from?: Date;
+      to?: Date;
+    }
+  ) => void;
+
+  getPrecioPorDia: (
+    date: Date
+  ) => number;
+};
+
+type BookedRange = {
+  from: Date;
+  to: Date;
 };
 
 export default function CalendarAirbnb({
@@ -42,10 +62,25 @@ export default function CalendarAirbnb({
   const [isMobile, setIsMobile] =
     useState(false);
 
+  // =========================================================
+  // 🔒 BOOKED RANGES
+  // =========================================================
+
+  const [bookedRanges, setBookedRanges] =
+    useState<BookedRange[]>([]);
+
+  // =========================================================
+  // 📱 RESPONSIVE
+  // =========================================================
+
   useEffect(() => {
 
     function handleResize() {
-      setIsMobile(window.innerWidth < 768);
+
+      setIsMobile(
+        window.innerWidth < 768
+      );
+
     }
 
     handleResize();
@@ -60,6 +95,50 @@ export default function CalendarAirbnb({
         "resize",
         handleResize
       );
+
+  }, []);
+
+  // =========================================================
+  // 🔥 FETCH BOOKINGS
+  // =========================================================
+
+  useEffect(() => {
+
+    async function fetchBookings() {
+
+      try {
+
+        const res =
+          await fetch("/api/bookings");
+
+        const data = await res.json();
+
+        const ranges =
+          data.map(
+            (booking: any) => ({
+              from: new Date(
+                booking.startDate
+              ),
+
+              to: new Date(
+                booking.endDate
+              ),
+            })
+          );
+
+        setBookedRanges(ranges);
+
+      } catch (error) {
+
+        console.error(
+          "Error fetching bookings",
+          error
+        );
+
+      }
+    }
+
+    fetchBookings();
 
   }, []);
 

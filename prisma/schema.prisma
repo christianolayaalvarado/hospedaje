@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  name      String?
+  email     String   @unique
+  password  String?
+
+  role      Role     @default(USER)
+
+  bookings  Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Property {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+
+  title       String
+  slug        String    @unique
+
+  description String
+
+  basePrice   Float
+
+  bookings    Booking[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Booking {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  propertyId   String   @db.ObjectId
+  property     Property @relation(fields: [propertyId], references: [id])
+
+  userId       String   @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id])
+
+  startDate    DateTime
+  endDate      DateTime
+
+  totalPrice   Float
+
+  paymentProof String?
+
+  status       BookingStatus @default(PENDING)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
