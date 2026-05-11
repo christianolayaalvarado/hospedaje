@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import Link from "next/link";
+
+import {
+  signIn,
+  signOut,
+  useSession,
+} from "next-auth/react";
+
 const sections = [
   {
     id: "servicios",
@@ -19,11 +27,17 @@ const sections = [
 
 export default function Navbar() {
 
+  const { data: session } =
+    useSession();
+
   const [scrolled, setScrolled] =
     useState(false);
 
   const [activeSection, setActiveSection] =
     useState("");
+
+  const [menuOpen, setMenuOpen] =
+    useState(false);
 
   useEffect(() => {
 
@@ -50,7 +64,9 @@ export default function Navbar() {
         ) {
           setActiveSection(section.id);
         }
+
       }
+
     }
 
     handleScroll();
@@ -83,7 +99,7 @@ export default function Navbar() {
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
 
-        {/* 🔥 LOGO */}
+        {/* LOGO */}
         <div className="flex items-center gap-2 cursor-pointer">
 
           <div className="h-9 w-9 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-md">
@@ -104,7 +120,7 @@ export default function Navbar() {
 
         </div>
 
-        {/* 🔥 NAV */}
+        {/* NAV */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
 
           {sections.map((section) => (
@@ -126,7 +142,6 @@ export default function Navbar() {
 
               {section.label}
 
-              {/* indicador */}
               <span
                 className={`
                   absolute
@@ -149,23 +164,200 @@ export default function Navbar() {
 
         </nav>
 
-        {/* 🔥 BOTÓN */}
-        <button
-          className="
-            bg-rose-500
-            hover:bg-rose-600
-            active:scale-95
-            transition
-            text-white
-            px-5 py-2
-            rounded-full
-            text-sm
-            font-medium
-            shadow-md
-          "
-        >
-          Reservar
-        </button>
+        {/* AUTH */}
+        <div className="flex items-center gap-3">
+
+          {!session ? (
+
+            <div className="flex items-center gap-3">
+
+              <Link
+                href="/login"
+                className="
+                  border
+                  px-5 py-2
+                  rounded-full
+                  text-sm
+                  font-medium
+                  hover:bg-gray-100
+                  transition
+                "
+              >
+                Login
+              </Link>
+
+              <Link
+                href="/register"
+                className="
+                  bg-rose-500
+                  hover:bg-rose-600
+                  active:scale-95
+                  transition
+                  text-white
+                  px-5 py-2
+                  rounded-full
+                  text-sm
+                  font-medium
+                  shadow-md
+                "
+              >
+                Registrarse
+              </Link>
+
+            </div>
+
+          ) : (
+
+            <div className="relative flex items-center gap-3">
+
+              {/* USER */}
+              <div className="hidden md:flex flex-col items-end leading-tight">
+
+                <span className="text-sm font-medium">
+                  {session.user?.name}
+                </span>
+
+                <span className="text-xs text-gray-500">
+                  {session.user?.email}
+                </span>
+
+              </div>
+
+              {/* AVATAR */}
+              <button
+                onClick={() =>
+                  setMenuOpen(!menuOpen)
+                }
+                className="relative"
+              >
+
+                {session.user?.image ? (
+
+                  <img
+                    src={session.user.image}
+                    alt="avatar"
+                    className="
+                      h-10 w-10
+                      rounded-full
+                      object-cover
+                      border
+                    "
+                  />
+
+                ) : (
+
+                  <div
+                    className="
+                      h-10 w-10
+                      rounded-full
+                      bg-gray-200
+                      flex items-center justify-center
+                    "
+                  >
+                    👤
+                  </div>
+
+                )}
+
+              </button>
+
+              {/* DROPDOWN */}
+              {menuOpen && (
+
+                <div
+                  className="
+                    absolute
+                    right-0
+                    top-14
+                    w-64
+                    bg-white
+                    border
+                    rounded-2xl
+                    shadow-xl
+                    p-2
+                    z-50
+                  "
+                >
+
+                  <div className="px-4 py-3 border-b">
+
+                    <p className="font-medium text-sm">
+                      {session.user?.name}
+                    </p>
+
+                    <p className="text-xs text-gray-500 mt-1 break-all">
+                      {session.user?.email}
+                    </p>
+
+                  </div>
+
+                  <div className="py-2 space-y-1">
+
+                    <Link
+                      href="/my-bookings"
+                      onClick={() =>
+                        setMenuOpen(false)
+                      }
+                      className="
+                        block px-4 py-2
+                        rounded-xl
+                        hover:bg-gray-100
+                        text-sm
+                        transition
+                      "
+                    >
+                      Mis reservas
+                    </Link>
+
+                    {session.user?.role === "ADMIN" && (
+
+                      <Link
+                        href="/admin"
+                        onClick={() =>
+                          setMenuOpen(false)
+                        }
+                        className="
+                          block px-4 py-2
+                          rounded-xl
+                          hover:bg-gray-100
+                          text-sm
+                          transition
+                        "
+                      >
+                        Panel Admin
+                      </Link>
+
+                    )}
+
+                  </div>
+
+                  <div className="border-t pt-2">
+
+                    <button
+                      onClick={() => signOut()}
+                      className="
+                        w-full text-left
+                        px-4 py-2
+                        rounded-xl
+                        hover:bg-gray-100
+                        text-sm
+                        transition
+                      "
+                    >
+                      Cerrar sesión
+                    </button>
+
+                  </div>
+
+                </div>
+
+              )}
+
+            </div>
+
+          )}
+
+        </div>
 
       </div>
 

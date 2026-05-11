@@ -90,3 +90,37 @@
   box-shadow:
     0 4px 12px rgba(0,0,0,0.18);
 }
+
+.rdp-blocked {
+  opacity: 0.25;
+  background: repeating-linear-gradient(
+    45deg,
+    #f3f4f6,
+    #f3f4f6 6px,
+    #e5e7eb 6px,
+    #e5e7eb 12px
+  );
+  position: relative;
+}
+
+/* etiqueta visual */
+.rdp-blocked::after {
+  content: "NO DISPONIBLE";
+  position: absolute;
+  font-size: 6px;
+  font-weight: bold;
+  color: #6b7280;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.rdp-day_button {
+  transition:
+    transform .18s ease,
+    background .18s ease;
+}
+
+.rdp-day_button:hover {
+  transform: scale(1.06);
+}
