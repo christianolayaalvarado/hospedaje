@@ -1,9 +1,7 @@
 import { getServerSession } from "next-auth";
-
 import { redirect } from "next/navigation";
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
 import { prisma } from "@/lib/prisma";
 
 export default async function MyBookingsPage() {
@@ -38,7 +36,7 @@ export default async function MyBookingsPage() {
         {/* HEADER */}
         <div className="mb-10">
 
-          <h1 className="text-4xl font-bold">
+          <h1 className="text-4xl font-bold text-gray-900">
             Mis reservas
           </h1>
 
@@ -51,10 +49,16 @@ export default async function MyBookingsPage() {
         {/* EMPTY */}
         {bookings.length === 0 && (
 
-          <div className="
-            bg-white border rounded-3xl
-            p-10 text-center
-          ">
+          <div
+            className="
+              bg-white
+              border
+              rounded-3xl
+              p-10
+              text-center
+              shadow-sm
+            "
+          >
 
             <h2 className="text-2xl font-semibold">
               No tienes reservas
@@ -92,24 +96,32 @@ export default async function MyBookingsPage() {
               <div
                 key={booking.id}
                 className="
-                  bg-white border rounded-3xl
-                  p-6 shadow-sm
+                  bg-white
+                  border
+                  rounded-3xl
+                  p-6
+                  shadow-sm
+                  hover:shadow-md
+                  transition
                 "
               >
 
-                <div className="
-                  flex flex-col lg:flex-row
-                  lg:items-center
-                  lg:justify-between
-                  gap-6
-                ">
+                <div
+                  className="
+                    flex flex-col
+                    lg:flex-row
+                    lg:items-center
+                    lg:justify-between
+                    gap-8
+                  "
+                >
 
                   {/* LEFT */}
-                  <div className="space-y-4">
+                  <div className="space-y-5 flex-1">
 
                     <div>
 
-                      <h2 className="text-2xl font-semibold">
+                      <h2 className="text-2xl font-semibold text-gray-900">
                         Hospedaje en San Miguel
                       </h2>
 
@@ -122,18 +134,30 @@ export default async function MyBookingsPage() {
 
                     </div>
 
-                    <div className="
-                      grid grid-cols-1 sm:grid-cols-3
-                      gap-4 text-sm
-                    ">
+                    <div
+                      className="
+                        grid
+                        grid-cols-1
+                        sm:grid-cols-3
+                        gap-4
+                      "
+                    >
 
-                      <div>
+                      {/* CHECK-IN */}
+                      <div
+                        className="
+                          border
+                          rounded-2xl
+                          p-4
+                          bg-gray-50
+                        "
+                      >
 
-                        <p className="text-gray-500">
+                        <p className="text-sm text-gray-500">
                           Check-in
                         </p>
 
-                        <p className="font-medium mt-1">
+                        <p className="font-semibold mt-2">
                           {new Date(
                             booking.startDate
                           ).toLocaleDateString("es-PE")}
@@ -141,13 +165,21 @@ export default async function MyBookingsPage() {
 
                       </div>
 
-                      <div>
+                      {/* CHECK-OUT */}
+                      <div
+                        className="
+                          border
+                          rounded-2xl
+                          p-4
+                          bg-gray-50
+                        "
+                      >
 
-                        <p className="text-gray-500">
+                        <p className="text-sm text-gray-500">
                           Check-out
                         </p>
 
-                        <p className="font-medium mt-1">
+                        <p className="font-semibold mt-2">
                           {new Date(
                             booking.endDate
                           ).toLocaleDateString("es-PE")}
@@ -155,13 +187,21 @@ export default async function MyBookingsPage() {
 
                       </div>
 
-                      <div>
+                      {/* NOCHES */}
+                      <div
+                        className="
+                          border
+                          rounded-2xl
+                          p-4
+                          bg-gray-50
+                        "
+                      >
 
-                        <p className="text-gray-500">
+                        <p className="text-sm text-gray-500">
                           Noches
                         </p>
 
-                        <p className="font-medium mt-1">
+                        <p className="font-semibold mt-2">
                           {nights}
                         </p>
 
@@ -172,43 +212,61 @@ export default async function MyBookingsPage() {
                   </div>
 
                   {/* RIGHT */}
-                  <div className="
-                    flex flex-col items-start
-                    lg:items-end gap-4
-                  ">
+                  <div
+                    className="
+                      flex
+                      flex-col
+                      items-start
+                      lg:items-end
+                      gap-5
+                    "
+                  >
 
-                    <div>
+                    {/* TOTAL */}
+                    <div className="text-left lg:text-right">
 
-                      <p className="text-gray-500 text-sm">
-                        Total
+                      <p className="text-sm text-gray-500">
+                        Total pagado
                       </p>
 
-                      <h3 className="text-3xl font-bold mt-1">
+                      <h3 className="text-4xl font-bold text-emerald-600 mt-1">
                         S/ {booking.totalPrice}
                       </h3>
 
                     </div>
 
+                    {/* STATUS */}
                     <span
                       className={`
-                        inline-flex items-center
-                        px-4 py-2 rounded-full
-                        text-sm font-medium
+                        inline-flex
+                        items-center
+                        px-5
+                        py-2.5
+                        rounded-full
+                        text-sm
+                        font-medium
+
                         ${
                           booking.status === "APPROVED"
                             ? "bg-green-100 text-green-700"
+
                             : booking.status === "REJECTED"
                             ? "bg-red-100 text-red-700"
+
                             : "bg-yellow-100 text-yellow-700"
                         }
                       `}
                     >
 
-                      {booking.status === "APPROVED"
-                        ? "Aprobada"
-                        : booking.status === "REJECTED"
-                        ? "Rechazada"
-                        : "Pendiente"}
+                      {
+                        booking.status === "APPROVED"
+                          ? "Aprobada"
+
+                          : booking.status === "REJECTED"
+                          ? "Rechazada"
+
+                          : "Pendiente"
+                      }
 
                     </span>
 

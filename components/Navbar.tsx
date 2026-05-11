@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Link from "next/link";
 
 import {
-  signIn,
   signOut,
   useSession,
 } from "next-auth/react";
@@ -39,6 +38,10 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] =
     useState(false);
 
+  const menuRef =
+    useRef<HTMLDivElement>(null);
+
+  // SCROLL
   useEffect(() => {
 
     function handleScroll() {
@@ -84,6 +87,38 @@ export default function Navbar() {
 
   }, []);
 
+  // CERRAR MENU AL HACER CLICK FUERA
+  useEffect(() => {
+
+    function handleClickOutside(
+      event: MouseEvent
+    ) {
+
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(
+          event.target as Node
+        )
+      ) {
+        setMenuOpen(false);
+      }
+
+    }
+
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+
+  }, []);
+
   return (
     <header
       className={`
@@ -100,7 +135,10 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
 
         {/* LOGO */}
-        <div className="flex items-center gap-2 cursor-pointer">
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+        >
 
           <div className="h-9 w-9 rounded-full bg-rose-500 flex items-center justify-center text-white font-semibold shadow-md">
             R&E
@@ -118,7 +156,7 @@ export default function Navbar() {
 
           </div>
 
-        </div>
+        </Link>
 
         {/* NAV */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
@@ -208,9 +246,12 @@ export default function Navbar() {
 
           ) : (
 
-            <div className="relative flex items-center gap-3">
+            <div
+              ref={menuRef}
+              className="relative flex items-center gap-3"
+            >
 
-              {/* USER */}
+              {/* USER INFO */}
               <div className="hidden md:flex flex-col items-end leading-tight">
 
                 <span className="text-sm font-medium">
@@ -223,24 +264,45 @@ export default function Navbar() {
 
               </div>
 
-              {/* AVATAR */}
+              {/* BOTON MENU + AVATAR */}
               <button
                 onClick={() =>
                   setMenuOpen(!menuOpen)
                 }
-                className="relative"
+                className="
+  flex items-center gap-2
+  px-2 py-1.5
+  rounded-full
+  bg-white/90
+  backdrop-blur-xl
+  shadow-sm
+  hover:shadow-md
+  transition-all duration-200
+  active:scale-[0.98]
+"
               >
 
+                {/* ICONO MENU */}
+                <div className="flex flex-col gap-1">
+
+                  <span className="w-4 h-[1.5px] bg-gray-700 rounded-full" />
+
+                  <span className="w-4 h-[1.5px] bg-gray-700 rounded-full" />
+
+                  <span className="w-4 h-[1.5px] bg-gray-700 rounded-full" />
+
+                </div>
+
+                {/* AVATAR */}
                 {session.user?.image ? (
 
                   <img
                     src={session.user.image}
                     alt="avatar"
                     className="
-                      h-10 w-10
+                      h-9 w-9
                       rounded-full
                       object-cover
-                      border
                     "
                   />
 
@@ -248,7 +310,7 @@ export default function Navbar() {
 
                   <div
                     className="
-                      h-10 w-10
+                      h-9 w-9
                       rounded-full
                       bg-gray-200
                       flex items-center justify-center
@@ -276,6 +338,7 @@ export default function Navbar() {
                     shadow-xl
                     p-2
                     z-50
+                    animate-in fade-in zoom-in-95
                   "
                 >
 
@@ -334,7 +397,10 @@ export default function Navbar() {
                   <div className="border-t pt-2">
 
                     <button
-                      onClick={() => signOut()}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        signOut();
+                      }}
                       className="
                         w-full text-left
                         px-4 py-2

@@ -8,6 +8,7 @@ datasource db {
 }
 
 model User {
+
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
 
   name           String?
@@ -29,9 +30,11 @@ model User {
 }
 
 model Account {
+
   id                 String  @id @default(auto()) @map("_id") @db.ObjectId
 
   userId             String  @db.ObjectId
+
   type               String
   provider           String
   providerAccountId  String
@@ -50,61 +53,67 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
 
-  sessionToken String   @unique
-  userId       String   @db.ObjectId
-  expires      DateTime
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  sessionToken  String   @unique
+
+  userId        String   @db.ObjectId
+  expires       DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
 
-  identifier String
-  token      String   @unique
-  expires    DateTime
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  identifier  String
+
+  token       String   @unique
+  expires     DateTime
 
   @@unique([identifier, token])
 }
 
 model Property {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
 
-  title       String
-  slug        String    @unique
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
 
-  description String
+  title        String
+  slug         String    @unique
 
-  basePrice   Float
+  description  String
 
-  bookings    Booking[]
+  basePrice    Float
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  bookings     Booking[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model Booking {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
 
-  propertyId   String   @db.ObjectId
-  property     Property @relation(fields: [propertyId], references: [id])
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId       String   @db.ObjectId
-  user         User     @relation(fields: [userId], references: [id])
+  propertyId    String   @db.ObjectId
+  property      Property @relation(fields: [propertyId], references: [id])
 
-  startDate    DateTime
-  endDate      DateTime
+  userId        String   @db.ObjectId
+  user          User @relation(fields: [userId], references: [id])
 
-  totalPrice   Float
+  startDate     DateTime
+  endDate       DateTime
 
-  paymentProof String?
+  totalPrice    Float
 
-  status       BookingStatus @default(PENDING)
+  paymentProof  String?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status        BookingStatus @default(PENDING)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 enum Role {
