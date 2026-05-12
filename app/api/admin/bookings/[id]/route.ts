@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 
@@ -7,7 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function PATCH(
-  req: Request,
+  req: NextRequest,
   {
     params,
   }: {
@@ -16,9 +16,7 @@ export async function PATCH(
     }>;
   }
 ) {
-
   try {
-
     const session =
       await getServerSession(authOptions);
 
@@ -26,7 +24,6 @@ export async function PATCH(
       !session ||
       session.user.role !== "ADMIN"
     ) {
-
       return NextResponse.json(
         {
           error: "No autorizado",
@@ -50,7 +47,6 @@ export async function PATCH(
         status
       )
     ) {
-
       return NextResponse.json(
         {
           error: "Estado inválido",
