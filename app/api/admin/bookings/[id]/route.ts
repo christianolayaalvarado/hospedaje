@@ -8,7 +8,9 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function PATCH(
   req: Request,
-  context: {
+  {
+    params,
+  }: {
     params: Promise<{
       id: string;
     }>;
@@ -17,7 +19,6 @@ export async function PATCH(
 
   try {
 
-    // SESSION
     const session =
       await getServerSession(authOptions);
 
@@ -36,17 +37,14 @@ export async function PATCH(
       );
     }
 
-    // PARAMS
     const { id } =
-      await context.params;
+      await params;
 
-    // BODY
     const body =
       await req.json();
 
     const { status } = body;
 
-    // VALIDACIÓN
     if (
       !["APPROVED", "REJECTED"].includes(
         status
@@ -63,7 +61,6 @@ export async function PATCH(
       );
     }
 
-    // UPDATE
     const booking =
       await prisma.booking.update({
         where: {
