@@ -6,15 +6,13 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-type Context = {
-  params: Promise<{
-    id: string;
-  }>;
-};
-
 export async function PATCH(
   req: NextRequest,
-  context: Context
+  context: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
 ) {
   try {
     const session =
