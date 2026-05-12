@@ -124,3 +124,34 @@
 .rdp-day_button:hover {
   transform: scale(1.06);
 }
+
+.rdp-blocked button {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.rdp-blocked button:hover {
+  background: #f3f4f6 !important;
+}
+
+.rdp-today button {
+  border: 1px solid black;
+  font-weight: 600;
+}
+
+.rdp-range_start button,
+.rdp-range_end button {
+  background: black !important;
+  color: white !important;
+}
+
+.rdp-range_middle button {
+  background: #f3f4f6 !important;
+  color: black !important;
+}
+
+.rdp-preview button {
+  background: #f9fafb !important;
+}

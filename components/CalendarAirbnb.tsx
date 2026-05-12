@@ -59,43 +59,97 @@ export default function CalendarAirbnb({
     fetchBookings();
   }, []);
 
-  function isDayBlocked(date: Date) {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
+function normalizeDate(date: Date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
-    return bookedRanges.some((r) => {
-      const from = new Date(r.from);
-      const to = new Date(r.to);
+function isDayBlocked(date: Date) {
 
-      from.setHours(0, 0, 0, 0);
-      to.setHours(0, 0, 0, 0);
+  const current = normalizeDate(date);
 
-      return d >= from && d <= to;
-    });
-  }
+  return bookedRanges.some((range) => {
+
+    const from = normalizeDate(range.from);
+    const to = normalizeDate(range.to);
+
+    return current >= from && current <= to;
+  });
+}
 
   function handleSelect(r: DateRange | undefined) {
-    if (!r) {
-      onChange({ from: undefined, to: undefined });
-      return;
-    }
 
-    if (r.from && r.to && r.from.getTime() === r.to.getTime()) {
-      onChange({ from: r.from, to: undefined });
-      return;
-    }
+  if (!r) {
 
-    if (r.from && r.to) {
-      const nights = Math.ceil(
-        (r.to.getTime() - r.from.getTime()) / (1000 * 60 * 60 * 24)
-      );
+    onChange({
+      from: undefined,
+      to: undefined,
+    });
 
-      if (nights < MIN_NIGHTS) return;
-
-      setHoveredDate(undefined);
-      onChange({ from: r.from, to: r.to });
-    }
+    return;
   }
+
+  // CLICK SIMPLE
+  if (
+    r.from &&
+    r.to &&
+    r.from.getTime() === r.to.getTime()
+  ) {
+
+    onChange({
+      from: r.from,
+      to: undefined,
+    });
+
+    return;
+  }
+
+  // VALIDAR RANGO
+  if (r.from && r.to) {
+
+    const start = normalizeDate(r.from);
+    const end = normalizeDate(r.to);
+
+    // MIN NOCHES
+    const nights = Math.ceil(
+      (end.getTime() - start.getTime()) /
+      (1000 * 60 * 60 * 24)
+    );
+
+    if (nights < MIN_NIGHTS) {
+      return;
+    }
+
+    // VALIDAR CRUCE
+    let hasBlockedDay = false;
+
+    const current = new Date(start);
+
+    while (current <= end) {
+
+      if (isDayBlocked(current)) {
+        hasBlockedDay = true;
+        break;
+      }
+
+      current.setDate(
+        current.getDate() + 1
+      );
+    }
+
+    if (hasBlockedDay) {
+      return;
+    }
+
+    setHoveredDate(undefined);
+
+    onChange({
+      from: start,
+      to: end,
+    });
+  }
+}
 
   const previewRange =
     selectedRange?.from && hoveredDate && !selectedRange?.to
@@ -129,6 +183,7 @@ export default function CalendarAirbnb({
       <DayPicker
         locale={es}
         mode="range"
+        min={MIN_NIGHTS}
         numberOfMonths={isMobile ? 1 : 2}
         selected={selectedRange}
         onSelect={handleSelect}
@@ -148,6 +203,7 @@ export default function CalendarAirbnb({
           range_middle: "rdp-range_middle",
           preview: "rdp-preview",
           booked: "rdp-blocked",
+          today: "rdp-today",
         }}
 classNames={{
   months:
