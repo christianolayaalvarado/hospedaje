@@ -124,19 +124,28 @@ function isDayBlocked(date: Date) {
     // VALIDAR CRUCE
     let hasBlockedDay = false;
 
-    const current = new Date(start);
+const current = new Date(start);
 
-    while (current <= end) {
+// SALTAR EL DÍA INICIAL
+current.setDate(
+  current.getDate() + 1
+);
 
-      if (isDayBlocked(current)) {
-        hasBlockedDay = true;
-        break;
-      }
+while (current <= end) {
 
-      current.setDate(
-        current.getDate() + 1
-      );
-    }
+  if (isDayBlocked(current)) {
+
+    hasBlockedDay = true;
+
+    break;
+
+  }
+
+  current.setDate(
+    current.getDate() + 1
+  );
+
+}
 
     if (hasBlockedDay) {
       return;
