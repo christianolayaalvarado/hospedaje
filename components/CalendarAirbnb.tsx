@@ -5,14 +5,24 @@ import "react-day-picker/dist/style.css";
 
 import { useState, useEffect } from "react";
 import { es } from "date-fns/locale";
+
 import "./calendar.css";
 
 const MIN_NIGHTS = 2;
 
 type Props = {
   selectedRange: DateRange | undefined;
-  onChange: (selectedRange: { from?: Date; to?: Date }) => void;
-  getPrecioPorDia: (date: Date) => number;
+
+  onChange: (
+    selectedRange: {
+      from?: Date;
+      to?: Date;
+    }
+  ) => void;
+
+  getPrecioPorDia: (
+    date: Date
+  ) => number;
 };
 
 type BookedRange = {
@@ -24,254 +34,380 @@ export default function CalendarAirbnb({
   selectedRange,
   onChange,
 }: Props) {
-  const [hoveredDate, setHoveredDate] = useState<Date | undefined>();
-  const [isMobile, setIsMobile] = useState(false);
-  const [bookedRanges, setBookedRanges] = useState<BookedRange[]>([]);
+
+  const [hoveredDate, setHoveredDate] =
+    useState<Date | undefined>();
+
+  const [isMobile, setIsMobile] =
+    useState(false);
+
+  const [bookedRanges, setBookedRanges] =
+    useState<BookedRange[]>([]);
 
   // RESPONSIVE
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+
+    const handleResize = () =>
+      setIsMobile(
+        window.innerWidth < 768
+      );
+
     handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
+
+    return () =>
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+
   }, []);
 
   // BOOKINGS
   useEffect(() => {
-    async function fetchBookings() {
-      try {
-        const res = await fetch("/api/bookings");
-        const data = await res.json();
 
-        if (!Array.isArray(data)) return;
+    async function fetchBookings() {
+
+      try {
+
+        const res =
+          await fetch("/api/bookings");
+
+        const data =
+          await res.json();
+
+        if (!Array.isArray(data)) {
+          return;
+        }
 
         setBookedRanges(
+
           data.map((b: any) => ({
-            from: new Date(b.startDate),
-            to: new Date(b.endDate),
+
+            from: new Date(
+              b.startDate
+            ),
+
+            to: new Date(
+              b.endDate
+            ),
+
           }))
+
         );
+
       } catch (e) {
+
         console.error(e);
+
       }
+
     }
 
     fetchBookings();
+
   }, []);
 
-function normalizeDate(date: Date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function isDayBlocked(date: Date) {
-
-  const current = normalizeDate(date);
-
-  return bookedRanges.some((range) => {
-
-    const from = normalizeDate(range.from);
-    const to = normalizeDate(range.to);
-
-    return current >= from && current <= to;
-  });
-}
-
-  function handleSelect(r: DateRange | undefined) {
-
-  if (!r) {
-
-    onChange({
-      from: undefined,
-      to: undefined,
-    });
-
-    return;
-  }
-
-  // CLICK SIMPLE
-  if (
-    r.from &&
-    r.to &&
-    r.from.getTime() === r.to.getTime()
+  function normalizeDate(
+    date: Date
   ) {
 
-    onChange({
-      from: r.from,
-      to: undefined,
-    });
+    const d = new Date(date);
 
-    return;
+    d.setHours(0, 0, 0, 0);
+
+    return d;
+
   }
 
-  // VALIDAR RANGO
-  if (r.from && r.to) {
+  function isDayBlocked(
+    date: Date
+  ) {
 
-    const start = normalizeDate(r.from);
-    const end = normalizeDate(r.to);
+    const current =
+      normalizeDate(date);
 
-    // MIN NOCHES
-    const nights = Math.ceil(
-      (end.getTime() - start.getTime()) /
-      (1000 * 60 * 60 * 24)
+    return bookedRanges.some(
+      (range) => {
+
+        const from =
+          normalizeDate(range.from);
+
+        const to =
+          normalizeDate(range.to);
+
+        return (
+          current >= from &&
+          current <= to
+        );
+
+      }
     );
 
-    if (nights < MIN_NIGHTS) {
-      return;
-    }
-
-    // VALIDAR CRUCE
-    let hasBlockedDay = false;
-
-const current = new Date(start);
-
-// SALTAR EL DÍA INICIAL
-current.setDate(
-  current.getDate() + 1
-);
-
-while (current <= end) {
-
-  if (isDayBlocked(current)) {
-
-    hasBlockedDay = true;
-
-    break;
-
   }
 
-  current.setDate(
-    current.getDate() + 1
-  );
+  function handleSelect(
+    r: DateRange | undefined
+  ) {
 
-}
+    if (!r) {
 
-    if (hasBlockedDay) {
+      onChange({
+        from: undefined,
+        to: undefined,
+      });
+
       return;
+
     }
 
-    setHoveredDate(undefined);
+    // CLICK SIMPLE
+    if (
+      r.from &&
+      r.to &&
+      r.from.getTime() ===
+        r.to.getTime()
+    ) {
 
-    onChange({
-      from: start,
-      to: end,
-    });
+      onChange({
+        from: r.from,
+        to: undefined,
+      });
+
+      return;
+
+    }
+
+    // VALIDAR RANGO
+    if (r.from && r.to) {
+
+      const start =
+        normalizeDate(r.from);
+
+      const end =
+        normalizeDate(r.to);
+
+      // MIN NOCHES
+      const nights = Math.ceil(
+
+        (
+          end.getTime() -
+          start.getTime()
+        ) /
+
+        (1000 * 60 * 60 * 24)
+
+      );
+
+      if (
+        nights < MIN_NIGHTS
+      ) {
+        return;
+      }
+
+      setHoveredDate(
+        undefined
+      );
+
+      onChange({
+        from: start,
+        to: end,
+      });
+
+    }
+
   }
-}
 
   const previewRange =
-    selectedRange?.from && hoveredDate && !selectedRange?.to
+
+    selectedRange?.from &&
+    hoveredDate &&
+    !selectedRange?.to
+
       ? {
+
           from:
-            hoveredDate < selectedRange.from
+            hoveredDate <
+            selectedRange.from
+
               ? hoveredDate
               : selectedRange.from,
+
           to:
-            hoveredDate > selectedRange.from
+            hoveredDate >
+            selectedRange.from
+
               ? hoveredDate
               : selectedRange.from,
+
         }
+
       : undefined;
 
   return (
+
     <div className="bg-white w-full">
 
       {/* LEYENDA */}
+
       <div className="flex gap-4 text-xs px-4 pb-2">
+
         <span className="flex items-center gap-1">
+
           <span className="w-3 h-3 bg-gray-300 rounded-full" />
+
           No disponible
+
         </span>
+
         <span className="flex items-center gap-1">
+
           <span className="w-3 h-3 bg-black rounded-full" />
+
           Disponible
+
         </span>
+
       </div>
 
       <DayPicker
         locale={es}
         mode="range"
         min={MIN_NIGHTS}
-        numberOfMonths={isMobile ? 1 : 2}
+        numberOfMonths={
+          isMobile ? 1 : 2
+        }
         selected={selectedRange}
         onSelect={handleSelect}
         disabled={isDayBlocked}
-        onDayMouseEnter={(date) => {
-          if (selectedRange?.from && !selectedRange?.to) {
+        onDayMouseEnter={(
+          date
+        ) => {
+
+          if (
+            selectedRange?.from &&
+            !selectedRange?.to
+          ) {
+
             setHoveredDate(date);
+
           }
+
         }}
         modifiers={{
-          preview: previewRange,
-          booked: (date) => isDayBlocked(date),
+
+          preview:
+            previewRange,
+
+          booked: (
+            date
+          ) =>
+            isDayBlocked(
+              date
+            ),
+
         }}
         modifiersClassNames={{
-          range_start: "rdp-range_start",
-          range_end: "rdp-range_end",
-          range_middle: "rdp-range_middle",
-          preview: "rdp-preview",
-          booked: "rdp-blocked",
-          today: "rdp-today",
+
+          range_start:
+            "rdp-range_start",
+
+          range_end:
+            "rdp-range_end",
+
+          range_middle:
+            "rdp-range_middle",
+
+          preview:
+            "rdp-preview",
+
+          booked:
+            "rdp-blocked",
+
+          today:
+            "rdp-today",
+
         }}
-classNames={{
-  months:
-    "flex flex-col md:flex-row gap-6 justify-center items-start px-2 pb-6",
+        classNames={{
 
-  month: "space-y-4 w-full",
+          months:
+            "flex flex-col md:flex-row gap-6 justify-center items-start px-2 pb-6",
 
-  month_grid: "w-full border-collapse",
+          month:
+            "space-y-4 w-full",
 
-  weekdays: "grid grid-cols-7 mb-2",
+          month_grid:
+            "w-full border-collapse",
 
-  weekday:
-    "text-gray-500 font-medium text-sm flex items-center justify-center",
+          weekdays:
+            "grid grid-cols-7 mb-2",
 
-  week: "grid grid-cols-7",
+          weekday:
+            "text-gray-500 font-medium text-sm flex items-center justify-center",
 
-  day: "flex items-center justify-center p-0",
+          week:
+            "grid grid-cols-7",
 
-  day_button:
-    "h-10 w-10 rounded-full flex items-center justify-center text-sm transition hover:bg-gray-100",
+          day:
+            "flex items-center justify-center p-0",
 
-  caption:
-    "flex items-center justify-center py-3 font-semibold relative text-3xl",
+          day_button:
+            "h-10 w-10 rounded-full flex items-center justify-center text-sm transition hover:bg-gray-100",
 
-  nav:
-    "absolute top-10 left-0 right-0 w-full flex justify-between px-4",
+          caption:
+            "flex items-center justify-center py-3 font-semibold relative text-3xl",
 
-  nav_button_previous:
-    "hover:bg-gray-100 rounded-full p-2 mt-1",
+          nav:
+            "absolute top-10 left-0 right-0 w-full flex justify-between px-4",
 
-  nav_button_next:
-    "hover:bg-gray-100 rounded-full p-2 mt-1",
+          nav_button_previous:
+            "hover:bg-gray-100 rounded-full p-2 mt-1",
 
-  disabled:
-    "text-gray-300 line-through opacity-40 cursor-not-allowed",
+          nav_button_next:
+            "hover:bg-gray-100 rounded-full p-2 mt-1",
 
-  today:
-    "border border-black rounded-full",
-}}
-          components={{
-        DayButton: (props) => {
+          disabled:
+            "text-gray-300 line-through opacity-40 cursor-not-allowed",
 
-          const blocked =
-            isDayBlocked(props.day.date);
+          today:
+            "border border-black rounded-full",
 
-          return (
-            <button
-              {...props}
-              title={
-                blocked
-                  ? "Fecha no disponible"
-                  : "Disponible"
-              }
-            />
-          );
-        },
-      }}
-        
+        }}
+        components={{
+
+          DayButton: (
+            props
+          ) => {
+
+            const blocked =
+              isDayBlocked(
+                props.day.date
+              );
+
+            return (
+
+              <button
+                {...props}
+                title={
+                  blocked
+                    ? "Fecha no disponible"
+                    : "Disponible"
+                }
+              />
+
+            );
+
+          },
+
+        }}
       />
+
     </div>
+
   );
+
 }
