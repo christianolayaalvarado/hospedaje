@@ -388,7 +388,7 @@ export default async function MyBookingsPage() {
                         "PENDING_PAYMENT" ||
 
                         booking.status ===
-                        "PAYMENT_SENT") && (
+                        "PAYMENT_REVIEW") && (
 
                         <CancelBookingButton
                           bookingId={booking.id}

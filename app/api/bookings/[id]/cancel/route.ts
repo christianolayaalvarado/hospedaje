@@ -5,9 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// =========================================================
+// ======================================================
 // CANCEL BOOKING
-// =========================================================
+// ======================================================
 
 export async function POST(
   req: Request,
@@ -20,9 +20,9 @@ export async function POST(
 
   try {
 
-    // =====================================================
+    // ==================================================
     // SESSION
-    // =====================================================
+    // ==================================================
 
     const session =
       await getServerSession(authOptions);
@@ -38,33 +38,24 @@ export async function POST(
       );
     }
 
-    // =====================================================
+    // ==================================================
     // PARAMS
-    // =====================================================
+    // ==================================================
 
     const { id } =
       await context.params;
 
-    if (!id) {
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: "ID inválido",
-        },
-        { status: 400 }
-      );
-    }
-
-    // =====================================================
+    // ==================================================
     // BOOKING
-    // =====================================================
+    // ==================================================
 
     const booking =
       await prisma.booking.findUnique({
+
         where: {
           id,
         },
+
       });
 
     if (!booking) {
@@ -78,78 +69,69 @@ export async function POST(
       );
     }
 
-    // =====================================================
-    // VALIDAR PROPIETARIO O ADMIN
-    // =====================================================
+    // ==================================================
+    // VALIDAR PROPIETARIO
+    // ==================================================
 
-    const isOwner =
-      booking.userId ===
-      session.user.id;
-
-    const isAdmin =
-      session.user.role === "ADMIN" ||
-      session.user.role === "SUPER_ADMIN";
-
-    if (!isOwner && !isAdmin) {
+    if (
+      booking.userId !==
+      session.user.id
+    ) {
 
       return NextResponse.json(
         {
           success: false,
-          error: "Sin permisos",
+          error: "No autorizado",
         },
         { status: 403 }
       );
     }
 
-    // =====================================================
-    // VALIDAR STATUS
-    // =====================================================
+    // ==================================================
+    // VALIDAR ESTADO
+    // ==================================================
+
+    const allowedStatuses = [
+      "PENDING_PAYMENT",
+      "PAYMENT_REVIEW",
+    ];
 
     if (
-      booking.status === "APPROVED"
+      !allowedStatuses.includes(
+        booking.status
+      )
     ) {
 
       return NextResponse.json(
         {
           success: false,
           error:
-            "No puedes cancelar una reserva aprobada",
+            "Esta reserva no puede cancelarse",
         },
         { status: 400 }
       );
     }
 
-    if (
-      booking.status === "CANCELLED"
-    ) {
-
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "La reserva ya fue cancelada",
-        },
-        { status: 400 }
-      );
-    }
-
-    // =====================================================
+    // ==================================================
     // CANCELAR
-    // =====================================================
+    // ==================================================
 
     await prisma.booking.update({
+
       where: {
         id,
       },
 
       data: {
-        status: "CANCELLED",
-      },
-    });
 
-    // =====================================================
-    // RESPONSE
-    // =====================================================
+        status: "CANCELLED",
+
+        cancelledAt:
+          new Date(),
+
+      },
+
+    });
 
     return NextResponse.json({
       success: true,
@@ -158,7 +140,7 @@ export async function POST(
   } catch (error) {
 
     console.error(
-      "POST /bookings/[id]/cancel error:",
+      "POST /cancel booking error:",
       error
     );
 

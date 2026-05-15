@@ -17,7 +17,12 @@ export default async function AdminPage() {
 
     prisma.booking.count({
       where: {
-        status: "PENDING",
+        status: {
+          in: [
+            "PENDING_PAYMENT",
+            "PAYMENT_REVIEW",
+          ],
+        },
       },
     }),
 
