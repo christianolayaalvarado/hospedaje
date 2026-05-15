@@ -184,7 +184,7 @@ export default function CalendarAirbnb({
           week: "grid grid-cols-7",
           day: "flex items-center justify-center p-0",
           day_button:
-            "h-10 w-10 rounded-full flex items-center justify-center text-sm transition hover:bg-gray-100",
+            "h-12 w-12 md:h-10 md:w-10 rounded-full flex items-center justify-center text-sm transition hover:bg-gray-100",
           caption:
             "flex items-center justify-center py-3 font-semibold relative text-3xl",
           nav:

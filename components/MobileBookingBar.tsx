@@ -2,78 +2,104 @@
 
 type Props = {
   price: number;
+
   startDate: Date | null;
   endDate: Date | null;
+
+  nights: number;
+
+  loading?: boolean;
+
   onOpen: () => void;
+
+  onReserve: () => void;
 };
 
 export default function MobileBookingBar({
   price,
   startDate,
   endDate,
+  nights,
+  loading,
   onOpen,
+  onReserve,
 }: Props) {
 
+  const hasDates =
+    startDate && endDate;
+
   return (
+
     <div
       className="
         md:hidden
-        fixed bottom-0 left-0 right-0
+        fixed
+        bottom-0
+        left-0
+        right-0
         z-40
         border-t
-        bg-white/90
-        backdrop-blur-xl
+        bg-white
         px-4
         py-3
-        pb-[calc(env(safe-area-inset-bottom)+12px)]
-        shadow-[0_-5px_30px_rgba(0,0,0,0.08)]
+        shadow-[0_-4px_20px_rgba(0,0,0,.08)]
+        backdrop-blur-xl
       "
     >
 
       <div className="flex items-center justify-between gap-4">
 
-        {/* 💰 INFO */}
-        <div>
+        {/* LEFT */}
+        <div
+          onClick={onOpen}
+          className="flex-1 min-w-0 cursor-pointer"
+        >
 
-          <p className="font-semibold leading-none">
+          <div className="font-semibold text-lg leading-none">
             S/ {price}
-            <span className="text-sm text-gray-500 font-normal">
-              {" "}noche
-            </span>
-          </p>
+          </div>
 
-          <p className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 mt-1 truncate">
 
-            {startDate && endDate
-              ? `${startDate.toLocaleDateString("es-PE")} - ${endDate.toLocaleDateString("es-PE")}`
+            {hasDates
+              ? `${nights} noche${nights > 1 ? "s" : ""}`
               : "Selecciona fechas"}
 
-          </p>
+          </div>
 
         </div>
 
-        {/* 🔘 CTA */}
+        {/* BUTTON */}
         <button
-          onClick={onOpen}
+          onClick={hasDates ? onReserve : onOpen}
+          disabled={loading}
           className="
             bg-rose-500
             hover:bg-rose-600
-            active:scale-95
+            active:scale-[.98]
             transition
             text-white
             px-6
             py-3
-            rounded-xl
+            rounded-2xl
             font-medium
-            shadow-md
-            whitespace-nowrap
+            shadow-lg
+            disabled:opacity-50
           "
         >
-          Reservar
+
+          {loading
+            ? "Procesando..."
+            : hasDates
+              ? "Reservar"
+              : "Fechas"}
+
         </button>
 
       </div>
 
     </div>
+
   );
+
 }

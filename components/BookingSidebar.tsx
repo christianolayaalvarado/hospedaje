@@ -223,11 +223,14 @@ export default function BookingSidebar({
           MOBILE BAR
       ========================= */}
       <MobileBookingBar
-        price={getPrecioPorDia(new Date())}
-        startDate={startDate}
-        endDate={endDate}
-        onOpen={() => setOpen(true)}
-      />
+      price={getPrecioPorDia(new Date())}
+      startDate={startDate}
+      endDate={endDate}
+      nights={nights}
+      loading={loading}
+      onOpen={() => setOpen(true)}
+      onReserve={handleBooking}
+    />
 
       {/* =========================
           CALENDAR MODAL
@@ -249,7 +252,19 @@ export default function BookingSidebar({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
             >
-              <div className="bg-white w-full md:max-w-3xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+              <div className="
+                bg-white
+                w-full
+                md:max-w-3xl
+                rounded-t-3xl
+                md:rounded-3xl
+                overflow-hidden
+                shadow-2xl
+                flex
+                flex-col
+                h-[92vh]
+                md:max-h-[90vh]
+              ">
 
                 {/* HEADER */}
                 <div className="p-5 border-b flex justify-between items-start">
@@ -276,7 +291,7 @@ export default function BookingSidebar({
                 </div>
 
                 {/* CALENDAR */}
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto px-2 pb-32 pt-2 md:p-4">
                   <CalendarAirbnb
                     key={refreshKey}
                     selectedRange={{
