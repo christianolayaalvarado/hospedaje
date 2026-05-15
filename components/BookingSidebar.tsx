@@ -275,7 +275,7 @@ export default function BookingSidebar({
 
           {/* BUTTON */}
 
-          <button
+                  <button
             disabled={
               !startDate ||
               !endDate ||
@@ -407,7 +407,7 @@ export default function BookingSidebar({
                   shadow-2xl
                   flex
                   flex-col
-                  h-[92vh]
+                  h-[82vh]
                   md:h-auto
                 "
               >
@@ -428,7 +428,7 @@ export default function BookingSidebar({
                     border-b
                     flex
                     justify-between
-                    items-start
+                    items-center
                     shrink-0
                     bg-white
                     sticky
@@ -437,25 +437,57 @@ export default function BookingSidebar({
                   "
                 >
 
-                  <div>
+                  <div className="flex items-center gap-4">
 
-                    <h2 className="text-xl font-semibold">
+  {/* LEFT */}
+  <div>
 
-                      {nights > 0
-                        ? `${nights} noche${nights > 1 ? "s" : ""}`
-                        : "Selecciona fechas"}
+    <h2 className="text-xl font-semibold">
 
-                    </h2>
+      {nights > 0
+        ? `${nights} noche${nights > 1 ? "s" : ""}`
+        : "Selecciona fechas"}
 
-                    <p className="text-sm text-gray-500 mt-1">
+    </h2>
 
-                      {startDate && endDate
-                        ? `${startDate.toLocaleDateString("es-PE")} - ${endDate.toLocaleDateString("es-PE")}`
-                        : "Agrega tus fechas"}
+    <p className="text-sm text-gray-500 mt-1">
 
-                    </p>
+      {startDate && endDate
+        ? `${startDate.toLocaleDateString("es-PE")} - ${endDate.toLocaleDateString("es-PE")}`
+        : "Agrega tus fechas"}
 
-                  </div>
+    </p>
+
+  </div>
+
+  {/* TOTAL */}
+  {nights > 0 && (
+
+    <div
+      className="
+        rounded-2xl
+        border
+        bg-gray-50
+        px-4
+        py-2
+        text-right
+        shrink-0
+      "
+    >
+
+      <p className="text-xs text-gray-500">
+        Total
+      </p>
+
+      <p className="font-semibold text-base">
+        S/ {total}
+      </p>
+
+    </div>
+
+  )}
+
+</div>
 
                   <button
                     onClick={() => setOpen(false)}
@@ -521,105 +553,7 @@ export default function BookingSidebar({
                   "
                 >
 
-                  {/* RESUMEN */}
-
-                  {nights > 0 && (
-
-                    <div className="flex justify-end mb-4">
-
-                      <div
-                        className="
-                          w-full
-                          max-w-[260px]
-                          rounded-2xl
-                          border
-                          bg-gray-50
-                          p-4
-                        "
-                      >
-
-                        <p
-                          className="
-                            text-sm
-                            font-semibold
-                            text-gray-800
-                            mb-3
-                          "
-                        >
-                          Resumen de reserva
-                        </p>
-
-                        <div className="space-y-2 text-sm">
-
-                          <div className="flex items-center justify-between gap-4">
-
-                            <span className="text-gray-600">
-                              {nights} noche{nights > 1 ? "s" : ""}
-                            </span>
-
-                            <span className="font-medium">
-                              S/ {total - cleaningFee - serviceFee}
-                            </span>
-
-                          </div>
-
-                          <div className="flex items-center justify-between gap-4">
-
-                            <span className="text-gray-600">
-                              Limpieza
-                            </span>
-
-                            <span className="font-medium">
-                              S/ {cleaningFee}
-                            </span>
-
-                          </div>
-
-                          <div className="flex items-center justify-between gap-4">
-
-                            <span className="text-gray-600">
-                              Servicio
-                            </span>
-
-                            <span className="font-medium">
-                              S/ {serviceFee}
-                            </span>
-
-                          </div>
-
-                          <div
-                            className="
-                              flex
-                              items-center
-                              justify-between
-                              gap-4
-                              border-t
-                              pt-3
-                              mt-3
-                              font-semibold
-                              text-base
-                            "
-                          >
-
-                            <span>Total</span>
-
-                            <span>S/ {total}</span>
-
-                          </div>
-
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  )}
-
-                  {/* INFO */}
-
-                  <p className="text-xs text-gray-500 mb-3 text-center">
-                    La reserva no queda confirmada hasta validar el pago.
-                  </p>
+                  
 
                   {/* BUTTON */}
 
