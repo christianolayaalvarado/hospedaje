@@ -13,16 +13,12 @@ const MIN_NIGHTS = 2;
 type Props = {
   selectedRange: DateRange | undefined;
 
-  onChange: (
-    selectedRange: {
-      from?: Date;
-      to?: Date;
-    }
-  ) => void;
+  onChange: (range: {
+    from?: Date;
+    to?: Date;
+  }) => void;
 
-  getPrecioPorDia: (
-    date: Date
-  ) => number;
+  getPrecioPorDia: (date: Date) => number;
 };
 
 type BookedRange = {
@@ -34,170 +30,98 @@ export default function CalendarAirbnb({
   selectedRange,
   onChange,
 }: Props) {
+  const [hoveredDate, setHoveredDate] = useState<Date | undefined>();
+  const [isMobile, setIsMobile] = useState(false);
+  const [bookedRanges, setBookedRanges] = useState<BookedRange[]>([]);
 
-  const [hoveredDate, setHoveredDate] =
-    useState<Date | undefined>();
-
-  const [isMobile, setIsMobile] =
-    useState(false);
-
-  const [bookedRanges, setBookedRanges] =
-    useState<BookedRange[]>([]);
-
+  // =========================
   // RESPONSIVE
+  // =========================
   useEffect(() => {
-
-    const handleResize = () =>
-      setIsMobile(
-        window.innerWidth < 768
-      );
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
 
     handleResize();
+    window.addEventListener("resize", handleResize);
 
-    window.addEventListener(
-      "resize",
-      handleResize
-    );
-
-    return () =>
-      window.removeEventListener(
-        "resize",
-        handleResize
-      );
-
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // BOOKINGS
+  // =========================
+  // FETCH BOOKINGS
+  // =========================
   useEffect(() => {
-
     async function fetchBookings() {
-
       try {
+        const res = await fetch("/api/bookings");
+        const data = await res.json();
 
-        const res =
-          await fetch("/api/bookings");
-
-        const data =
-          await res.json();
-
-        if (!Array.isArray(data)) {
-          return;
-        }
+        if (!Array.isArray(data)) return;
 
         setBookedRanges(
-
           data.map((b: any) => ({
-
-            from: new Date(
-              b.startDate
-            ),
-
-            to: new Date(
-              b.endDate
-            ),
-
+            from: new Date(b.startDate),
+            to: new Date(b.endDate),
           }))
-
         );
-
       } catch (e) {
-
         console.error(e);
-
       }
-
     }
 
     fetchBookings();
-
   }, []);
 
-  function normalizeDate(
-    date: Date
-  ) {
-
+  // =========================
+  // NORMALIZE DATE
+  // =========================
+  function normalizeDate(date: Date) {
     const d = new Date(date);
-
     d.setHours(0, 0, 0, 0);
-
     return d;
-
   }
 
-  function isDayBlocked(
-    date: Date
-  ) {
+  // =========================
+  // BLOCKED DAYS
+  // =========================
+  function isDayBlocked(date: Date) {
+    const current = normalizeDate(date);
 
-    const current =
-      normalizeDate(date);
+    return bookedRanges.some((range) => {
+      const from = normalizeDate(range.from);
+      const to = normalizeDate(range.to);
 
-    return bookedRanges.some(
-      (range) => {
-
-        const from =
-          normalizeDate(range.from);
-
-        const to =
-          normalizeDate(range.to);
-
-        return (
-          current >= from &&
-          current <= to
-        );
-
-      }
-    );
-
-  }
-
-  function handleSelect(
-  r: DateRange | undefined
-) {
-
-  if (!r) {
-
-    onChange({
-      from: undefined,
-      to: undefined,
+      return current >= from && current <= to;
     });
-
-    return;
-
   }
 
-  // SOLO FECHA INICIAL
-  if (r.from && !r.to) {
+  // =========================
+  // HANDLE SELECT (FIXED)
+  // =========================
+  function handleSelect(r: DateRange | undefined) {
+    if (!r?.from) {
+      onChange({ from: undefined, to: undefined });
+      setHoveredDate(undefined);
+      return;
+    }
 
-    onChange({
-      from: r.from,
-      to: undefined,
-    });
+    // solo inicio
+    if (!r.to) {
+      onChange({
+        from: r.from,
+        to: undefined,
+      });
+      return;
+    }
 
-    return;
-
-  }
-
-  // RANGO COMPLETO
-  if (r.from && r.to) {
-
-    const start =
-      normalizeDate(r.from);
-
-    const end =
-      normalizeDate(r.to);
+    const start = normalizeDate(r.from);
+    const end = normalizeDate(r.to);
 
     const nights = Math.ceil(
-
-      (
-        end.getTime() -
-        start.getTime()
-      ) /
-
-      (1000 * 60 * 60 * 24)
-
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    // mínimo 2 noches
     if (nights < MIN_NIGHTS) {
       return;
     }
@@ -208,143 +132,81 @@ export default function CalendarAirbnb({
       from: start,
       to: end,
     });
-
   }
 
-}
-
+  // =========================
+  // PREVIEW RANGE
+  // =========================
   const previewRange =
-
     selectedRange?.from &&
     hoveredDate &&
     !selectedRange?.to
-
       ? {
-
           from:
-            hoveredDate <
-            selectedRange.from
-
+            hoveredDate < selectedRange.from
               ? hoveredDate
               : selectedRange.from,
 
           to:
-            hoveredDate >
-            selectedRange.from
-
+            hoveredDate > selectedRange.from
               ? hoveredDate
               : selectedRange.from,
-
         }
-
       : undefined;
 
   return (
-
     <div className="bg-white w-full">
-
-      {/* LEYENDA */}
-
+      {/* LEGEND */}
       <div className="flex gap-4 text-xs px-4 pb-2">
-
         <span className="flex items-center gap-1">
-
           <span className="w-3 h-3 bg-gray-300 rounded-full" />
-
           No disponible
-
         </span>
 
         <span className="flex items-center gap-1">
-
           <span className="w-3 h-3 bg-black rounded-full" />
-
           Disponible
-
         </span>
-
       </div>
 
       <DayPicker
         locale={es}
         mode="range"
-        min={MIN_NIGHTS}
-        numberOfMonths={
-          isMobile ? 1 : 2
-        }
+        numberOfMonths={isMobile ? 1 : 2}
         selected={selectedRange}
         onSelect={handleSelect}
         disabled={isDayBlocked}
-        onDayMouseEnter={(
-          date
-        ) => {
-
-          if (
-            selectedRange?.from &&
-            !selectedRange?.to
-          ) {
-
+        onDayMouseEnter={(date) => {
+          if (selectedRange?.from && !selectedRange?.to) {
             setHoveredDate(date);
-
           }
-
         }}
         modifiers={{
-
-          preview:
-            previewRange,
-
-          booked: (
-            date
-          ) =>
-            isDayBlocked(
-              date
-            ),
-
+          preview: previewRange,
+          booked: (date) => isDayBlocked(date),
         }}
         modifiersClassNames={{
-
-          range_start:
-            "rdp-range_start",
-
-          range_end:
-            "rdp-range_end",
-
-          range_middle:
-            "rdp-range_middle",
-
-          preview:
-            "rdp-preview",
-
-          booked:
-            "rdp-blocked",
-
-          today:
-            "rdp-today",
-
+          range_start: "rdp-range_start",
+          range_end: "rdp-range_end",
+          range_middle: "rdp-range_middle",
+          preview: "rdp-preview",
+          booked: "rdp-blocked",
+          today: "rdp-today",
         }}
         classNames={{
-
           months:
             "flex flex-col md:flex-row gap-6 justify-center items-start px-2 pb-6",
 
-          month:
-            "space-y-4 w-full",
+          month: "space-y-4 w-full",
+          month_grid: "w-full border-collapse",
 
-          month_grid:
-            "w-full border-collapse",
-
-          weekdays:
-            "grid grid-cols-7 mb-2",
-
+          weekdays: "grid grid-cols-7 mb-2",
           weekday:
             "text-gray-500 font-medium text-sm flex items-center justify-center",
 
-          week:
-            "grid grid-cols-7",
+          week: "grid grid-cols-7",
 
-          day:
-            "flex items-center justify-center p-0",
+          day: "flex items-center justify-center p-0",
 
           day_button:
             "h-10 w-10 rounded-full flex items-center justify-center text-sm transition hover:bg-gray-100",
@@ -361,18 +223,11 @@ export default function CalendarAirbnb({
           nav_button_next:
             "hover:bg-gray-100 rounded-full p-2 mt-1",
 
-          disabled:
-            "text-gray-300 line-through opacity-40 cursor-not-allowed",
+          disabled: "text-gray-300 line-through opacity-40 cursor-not-allowed",
 
-          today:
-            "border border-black rounded-full",
-
+          today: "border border-black rounded-full",
         }}
-        
       />
-
     </div>
-
   );
-
 }
