@@ -4,19 +4,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { BookingStatus } from "@prisma/client";
 
-// =========================================================
-// PATCH: APROBAR / RECHAZAR BOOKING
-// =========================================================
-
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
 
     // =====================================================
-    // VALIDACIÓN ADMIN (BACKEND FIX)
+    // VALIDACIÓN ADMIN
     // =====================================================
     if (
       !session?.user ||
@@ -34,9 +30,6 @@ export async function PATCH(
       action: "APPROVE" | "REJECT";
     };
 
-    // =====================================================
-    // VALIDACIÓN INPUT
-    // =====================================================
     if (!action) {
       return NextResponse.json(
         { success: false, error: "Acción requerida" },
@@ -44,8 +37,18 @@ export async function PATCH(
       );
     }
 
+    // 🔥 FIX REAL NEXT.JS 14+
+    const { id } = await context.params;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "ID inválido" },
+        { status: 400 }
+      );
+    }
+
     const booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!booking) {
@@ -55,14 +58,11 @@ export async function PATCH(
       );
     }
 
-    // =====================================================
-    // ACTUALIZAR ESTADO
-    // =====================================================
     let updated;
 
     if (action === "APPROVE") {
       updated = await prisma.booking.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: BookingStatus.APPROVED,
           approvedAt: new Date(),
@@ -72,7 +72,7 @@ export async function PATCH(
 
     if (action === "REJECT") {
       updated = await prisma.booking.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: BookingStatus.REJECTED,
         },

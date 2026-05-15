@@ -13,16 +13,13 @@ export async function GET() {
     await prisma.booking.updateMany({
       where: {
         status: BookingStatus.PENDING_PAYMENT,
-        expiresAt: {
-          lt: new Date(),
-        },
+        expiresAt: { lt: new Date() },
       },
       data: {
         status: BookingStatus.EXPIRED,
       },
     });
 
-    // Reservas activas que bloquean fechas
     const bookings = await prisma.booking.findMany({
       where: {
         status: {
@@ -64,17 +61,11 @@ export async function GET() {
 // =========================================================
 export async function POST(req: Request) {
   try {
-    // =========================
-    // AUTH CHECK
-    // =========================
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Debes iniciar sesión",
-        },
+        { success: false, error: "Debes iniciar sesión" },
         { status: 401 }
       );
     }
@@ -85,18 +76,24 @@ export async function POST(req: Request) {
       startDate,
       endDate,
       totalPrice,
-      propertyId, // 🔥 IMPORTANTE AHORA ES DINÁMICO
+      propertyId,
     } = body as {
-      startDate: string | Date;
-      endDate: string | Date;
-      totalPrice: number;
-      propertyId: string;
+      startDate?: string | Date;
+      endDate?: string | Date;
+      totalPrice?: number;
+      propertyId?: string;
     };
 
-    // =========================
-    // VALIDACIÓN BÁSICA
-    // =========================
-    if (!startDate || !endDate || !totalPrice || !propertyId) {
+    // =====================================================
+    // VALIDACIÓN MEJORADA (IMPORTANTE)
+    // =====================================================
+    if (
+      !startDate ||
+      !endDate ||
+      !propertyId ||
+      totalPrice === undefined ||
+      totalPrice === null
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -109,7 +106,7 @@ export async function POST(req: Request) {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
       return NextResponse.json(
         {
           success: false,
@@ -129,24 +126,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // =========================
-    // EXPIRAR RESERVAS VIEJAS
-    // =========================
-    await prisma.booking.updateMany({
-      where: {
-        status: BookingStatus.PENDING_PAYMENT,
-        expiresAt: {
-          lt: new Date(),
-        },
-      },
-      data: {
-        status: BookingStatus.EXPIRED,
-      },
-    });
-
-    // =========================
+    // =====================================================
     // VALIDAR PROPERTY
-    // =========================
+    // =====================================================
     const property = await prisma.property.findUnique({
       where: { id: propertyId },
     });
@@ -161,13 +143,25 @@ export async function POST(req: Request) {
       );
     }
 
-    // =========================
-    // VALIDAR SOLAPAMIENTO (CRÍTICO)
-    // =========================
+    // =====================================================
+    // EXPIRAR RESERVAS VIEJAS
+    // =====================================================
+    await prisma.booking.updateMany({
+      where: {
+        status: BookingStatus.PENDING_PAYMENT,
+        expiresAt: { lt: new Date() },
+      },
+      data: {
+        status: BookingStatus.EXPIRED,
+      },
+    });
+
+    // =====================================================
+    // VALIDAR SOLAPAMIENTO
+    // =====================================================
     const overlap = await prisma.booking.findFirst({
       where: {
         propertyId,
-
         status: {
           in: [
             BookingStatus.PENDING_PAYMENT,
@@ -175,14 +169,9 @@ export async function POST(req: Request) {
             BookingStatus.APPROVED,
           ],
         },
-
         AND: [
-          {
-            startDate: { lt: end },
-          },
-          {
-            endDate: { gt: start },
-          },
+          { startDate: { lt: end } },
+          { endDate: { gt: start } },
         ],
       },
     });
@@ -197,14 +186,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // =========================
-    // EXPIRACIÓN 30 MIN
-    // =========================
+    // =====================================================
+    // CREAR BOOKING
+    // =====================================================
     const expiresAt = new Date(Date.now() + 1000 * 60 * 30);
 
-    // =========================
-    // CREAR BOOKING
-    // =========================
     const booking = await prisma.booking.create({
       data: {
         startDate: start,
