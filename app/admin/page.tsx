@@ -5,7 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { BookingStatus } from "@prisma/client";
 
-import BookingActions from "@/components/admin/BookingActions";
+import AdminBookingActions from "@/components/admin/AdminBookingActions";
 
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -20,10 +20,6 @@ export default async function AdminDashboardPage() {
   ) {
     redirect("/");
   }
-
-  // =========================================
-  // STATS
-  // =========================================
 
   const [
     totalBookings,
@@ -72,68 +68,46 @@ export default async function AdminDashboardPage() {
     }),
   ]);
 
-  // =========================================
-  // INGRESOS (SOLO APROBADOS)
-  // =========================================
-
-  const approvedReservations = await prisma.booking.findMany({
-    where: {
-      status: BookingStatus.APPROVED,
-    },
-  });
-
-  const totalRevenue = approvedReservations.reduce(
-    (acc, booking) => acc + (booking.totalPrice || 0),
-    0
-  );
-
-  // =========================================
-  // STATUS STYLES
-  // =========================================
+  const totalRevenue = await prisma.booking
+    .findMany({
+      where: { status: BookingStatus.APPROVED },
+    })
+    .then((res) =>
+      res.reduce(
+        (acc, b) => acc + (b.totalPrice || 0),
+        0
+      )
+    );
 
   function getStatusStyles(status: BookingStatus) {
     switch (status) {
       case BookingStatus.APPROVED:
         return "bg-green-100 text-green-700";
-
       case BookingStatus.REJECTED:
         return "bg-red-100 text-red-700";
-
       case BookingStatus.PAYMENT_REVIEW:
         return "bg-blue-100 text-blue-700";
-
       case BookingStatus.CANCELLED:
         return "bg-gray-200 text-gray-700";
-
       case BookingStatus.EXPIRED:
         return "bg-orange-100 text-orange-700";
-
       default:
         return "bg-yellow-100 text-yellow-700";
     }
   }
 
-  // =========================================
-  // STATUS TEXT
-  // =========================================
-
   function getStatusText(status: BookingStatus) {
     switch (status) {
       case BookingStatus.APPROVED:
         return "Aprobada";
-
       case BookingStatus.REJECTED:
         return "Rechazada";
-
       case BookingStatus.PAYMENT_REVIEW:
         return "Pago en revisión";
-
       case BookingStatus.CANCELLED:
         return "Cancelada";
-
       case BookingStatus.EXPIRED:
         return "Expirada";
-
       default:
         return "Pendiente de pago";
     }
@@ -153,7 +127,7 @@ export default async function AdminDashboardPage() {
           </p>
         </div>
 
-        {/* CARDS */}
+        {/* STATS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6 mb-10">
 
           <div className="bg-white rounded-3xl p-6 shadow-sm border">
@@ -190,7 +164,6 @@ export default async function AdminDashboardPage() {
               {totalUsers}
             </h2>
           </div>
-
         </div>
 
         {/* REVENUE */}
@@ -198,14 +171,9 @@ export default async function AdminDashboardPage() {
           <p className="text-sm text-gray-500">
             Ingresos Totales
           </p>
-
           <h2 className="text-5xl font-bold mt-4 text-emerald-600">
             S/ {totalRevenue.toFixed(2)}
           </h2>
-
-          <p className="text-gray-400 mt-3 text-sm">
-            Basado en reservas aprobadas
-          </p>
         </div>
 
         {/* TABLE */}
@@ -223,11 +191,11 @@ export default async function AdminDashboardPage() {
 
               <thead className="bg-gray-100 border-b">
                 <tr className="text-left text-sm text-gray-600">
-                  <th className="px-6 py-4 font-semibold">Usuario</th>
-                  <th className="px-6 py-4 font-semibold">Hospedaje</th>
-                  <th className="px-6 py-4 font-semibold">Fechas</th>
-                  <th className="px-6 py-4 font-semibold">Total</th>
-                  <th className="px-6 py-4 font-semibold">Estado</th>
+                  <th className="px-6 py-4">Usuario</th>
+                  <th className="px-6 py-4">Hospedaje</th>
+                  <th className="px-6 py-4">Fechas</th>
+                  <th className="px-6 py-4">Total</th>
+                  <th className="px-6 py-4">Estado</th>
                 </tr>
               </thead>
 
@@ -235,55 +203,48 @@ export default async function AdminDashboardPage() {
                 {bookings.map((booking) => (
                   <tr
                     key={booking.id}
-                    className="border-b last:border-b-0 hover:bg-gray-50 transition"
+                    className="border-b hover:bg-gray-50"
                   >
-                    {/* USER */}
                     <td className="px-6 py-5">
-                      <p className="font-medium text-gray-900">
-                        {booking.user?.name || "Sin nombre"}
+                      <p className="font-medium">
+                        {booking.user?.name}
                       </p>
                       <p className="text-sm text-gray-500">
                         {booking.user?.email}
                       </p>
                     </td>
 
-                    {/* PROPERTY */}
-                    <td className="px-6 py-5 font-medium">
-                      {booking.property?.title || "Hospedaje"}
+                    <td className="px-6 py-5">
+                      {booking.property?.title}
                     </td>
 
-                    {/* DATES */}
-                    <td className="px-6 py-5 text-sm text-gray-700">
-                      <div className="space-y-1">
-                        <p>
-                          {new Date(
-                            booking.startDate
-                          ).toLocaleDateString("es-PE")}
-                        </p>
-                        <p>
-                          {new Date(
-                            booking.endDate
-                          ).toLocaleDateString("es-PE")}
-                        </p>
-                      </div>
+                    <td className="px-6 py-5 text-sm">
+                      <p>
+                        {new Date(
+                          booking.startDate
+                        ).toLocaleDateString("es-PE")}
+                      </p>
+                      <p>
+                        {new Date(
+                          booking.endDate
+                        ).toLocaleDateString("es-PE")}
+                      </p>
                     </td>
 
-                    {/* TOTAL */}
                     <td className="px-6 py-5 font-semibold">
                       S/ {booking.totalPrice}
                     </td>
 
-                    {/* STATUS + ACTIONS */}
                     <td className="px-6 py-5 space-y-2">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(
+                        className={`px-3 py-1 rounded-full text-xs ${getStatusStyles(
                           booking.status
                         )}`}
                       >
                         {getStatusText(booking.status)}
                       </span>
 
-                      <BookingActions
+                      <AdminBookingActions
                         bookingId={booking.id}
                         status={booking.status}
                       />
@@ -294,13 +255,8 @@ export default async function AdminDashboardPage() {
 
             </table>
           </div>
-
-          {bookings.length === 0 && (
-            <div className="p-10 text-center text-gray-500">
-              No hay reservas todavía.
-            </div>
-          )}
         </div>
+
       </div>
     </div>
   );
