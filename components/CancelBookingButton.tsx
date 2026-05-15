@@ -1,104 +1,68 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type Props = {
   bookingId: string;
 };
 
-export default function CancelBookingButton({
-  bookingId,
-}: Props) {
+export default function CancelBookingButton({ bookingId }: Props) {
+  const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
-
-  const [loading, setLoading] =
-    useState(false);
-
+  // =========================
+  // CANCEL BOOKING
+  // =========================
   async function handleCancel() {
+    if (loading) return; // 🔥 evita doble click
 
-    const confirmDelete =
-      confirm(
-        "¿Deseas cancelar esta reserva?"
-      );
+    const confirm = window.confirm(
+      "¿Estás seguro de que quieres cancelar esta reserva?"
+    );
 
-    if (!confirmDelete) {
-      return;
-    }
+    if (!confirm) return;
 
     try {
-
       setLoading(true);
 
-      const res = await fetch(
-        `/api/bookings/${bookingId}/cancel`,
-        {
-          method: "POST",
-        }
-      );
+      const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
+        method: "PATCH",
+      });
 
       const data = await res.json();
 
       if (!res.ok) {
-
-        alert(
-          data.error ||
-          "Error cancelando reserva"
-        );
-
+        toast.error(data.error || "No se pudo cancelar la reserva");
         return;
       }
 
-      alert(
-        "Reserva cancelada correctamente"
-      );
+      toast.success("Reserva cancelada correctamente");
 
-      router.refresh();
-
+      // 🔥 refresco simple (SSR revalidation indirecta)
+      window.location.reload();
     } catch (error) {
-
       console.error(error);
-
-      alert(
-        "Ocurrió un error"
-      );
-
+      toast.error("Error inesperado al cancelar");
     } finally {
-
       setLoading(false);
-
     }
-
   }
 
   return (
-
     <button
-      type="button"
       onClick={handleCancel}
       disabled={loading}
       className="
-        border
-        border-red-200
+        px-5 py-3 rounded-xl text-sm font-medium
+        border border-red-200
         text-red-600
         hover:bg-red-50
-        px-5
-        py-3
-        rounded-xl
-        text-sm
-        font-medium
-        transition
         disabled:opacity-50
+        disabled:cursor-not-allowed
+        transition
       "
     >
-
-      {loading
-        ? "Cancelando..."
-        : "Cancelar reserva"}
-
+      {loading ? "Cancelando..." : "Cancelar reserva"}
     </button>
-
   );
-
 }

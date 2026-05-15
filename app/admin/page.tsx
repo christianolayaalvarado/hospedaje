@@ -5,10 +5,12 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { BookingStatus } from "@prisma/client";
 
+import BookingActions from "@/components/admin/BookingActions";
+
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session?.user) {
     redirect("/");
   }
 
@@ -71,7 +73,7 @@ export default async function AdminDashboardPage() {
   ]);
 
   // =========================================
-  // INGRESOS
+  // INGRESOS (SOLO APROBADOS)
   // =========================================
 
   const approvedReservations = await prisma.booking.findMany({
@@ -81,7 +83,7 @@ export default async function AdminDashboardPage() {
   });
 
   const totalRevenue = approvedReservations.reduce(
-    (acc, booking) => acc + booking.totalPrice,
+    (acc, booking) => acc + (booking.totalPrice || 0),
     0
   );
 
@@ -124,7 +126,7 @@ export default async function AdminDashboardPage() {
         return "Rechazada";
 
       case BookingStatus.PAYMENT_REVIEW:
-        return "Pago enviado";
+        return "Pago en revisión";
 
       case BookingStatus.CANCELLED:
         return "Cancelada";
@@ -156,7 +158,9 @@ export default async function AdminDashboardPage() {
 
           <div className="bg-white rounded-3xl p-6 shadow-sm border">
             <p className="text-sm text-gray-500">Reservas</p>
-            <h2 className="text-4xl font-bold mt-3">{totalBookings}</h2>
+            <h2 className="text-4xl font-bold mt-3">
+              {totalBookings}
+            </h2>
           </div>
 
           <div className="bg-white rounded-3xl p-6 shadow-sm border">
@@ -191,7 +195,9 @@ export default async function AdminDashboardPage() {
 
         {/* REVENUE */}
         <div className="bg-white rounded-3xl p-8 shadow-sm border mb-10">
-          <p className="text-sm text-gray-500">Ingresos Totales</p>
+          <p className="text-sm text-gray-500">
+            Ingresos Totales
+          </p>
 
           <h2 className="text-5xl font-bold mt-4 text-emerald-600">
             S/ {totalRevenue.toFixed(2)}
@@ -231,6 +237,7 @@ export default async function AdminDashboardPage() {
                     key={booking.id}
                     className="border-b last:border-b-0 hover:bg-gray-50 transition"
                   >
+                    {/* USER */}
                     <td className="px-6 py-5">
                       <p className="font-medium text-gray-900">
                         {booking.user?.name || "Sin nombre"}
@@ -240,26 +247,34 @@ export default async function AdminDashboardPage() {
                       </p>
                     </td>
 
+                    {/* PROPERTY */}
                     <td className="px-6 py-5 font-medium">
                       {booking.property?.title || "Hospedaje"}
                     </td>
 
+                    {/* DATES */}
                     <td className="px-6 py-5 text-sm text-gray-700">
                       <div className="space-y-1">
                         <p>
-                          {new Date(booking.startDate).toLocaleDateString("es-PE")}
+                          {new Date(
+                            booking.startDate
+                          ).toLocaleDateString("es-PE")}
                         </p>
                         <p>
-                          {new Date(booking.endDate).toLocaleDateString("es-PE")}
+                          {new Date(
+                            booking.endDate
+                          ).toLocaleDateString("es-PE")}
                         </p>
                       </div>
                     </td>
 
+                    {/* TOTAL */}
                     <td className="px-6 py-5 font-semibold">
                       S/ {booking.totalPrice}
                     </td>
 
-                    <td className="px-6 py-5">
+                    {/* STATUS + ACTIONS */}
+                    <td className="px-6 py-5 space-y-2">
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(
                           booking.status
@@ -267,13 +282,17 @@ export default async function AdminDashboardPage() {
                       >
                         {getStatusText(booking.status)}
                       </span>
+
+                      <BookingActions
+                        bookingId={booking.id}
+                        status={booking.status}
+                      />
                     </td>
                   </tr>
                 ))}
               </tbody>
 
             </table>
-
           </div>
 
           {bookings.length === 0 && (
@@ -281,9 +300,7 @@ export default async function AdminDashboardPage() {
               No hay reservas todavía.
             </div>
           )}
-
         </div>
-
       </div>
     </div>
   );

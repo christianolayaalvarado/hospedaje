@@ -1,110 +1,72 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { toast } from "sonner";
-
-type Props = {
-  bookingId: string;
-  currentStatus: string;
-};
-
-export default function AdminBookingActions({
+export default function BookingActions({
   bookingId,
-  currentStatus,
-}: Props) {
-
-  const router = useRouter();
-
+  status,
+}: {
+  bookingId: string;
+  status: string;
+}) {
   const [loading, setLoading] = useState(false);
 
-  async function updateStatus(
-    status: "APPROVED" | "REJECTED"
-  ) {
-
+  async function handleAction(action: "APPROVE" | "REJECT") {
     try {
-
       setLoading(true);
 
       const res = await fetch(
         `/api/admin/bookings/${bookingId}`,
         {
           method: "PATCH",
-
           headers: {
             "Content-Type": "application/json",
           },
-
-          body: JSON.stringify({
-            status,
-          }),
+          body: JSON.stringify({ action }),
         }
       );
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error);
+        alert(data.error || "Error");
+        return;
       }
 
-      toast.success("Reserva actualizada");
-
-      router.refresh();
-
-    } catch (error: any) {
-
-      toast.error(error.message);
-
+      alert("Acción realizada");
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      alert("Error inesperado");
     } finally {
-
       setLoading(false);
-
     }
-
   }
 
-  if (currentStatus !== "PENDING") {
-
-    return (
-      <p className="text-sm text-gray-400">
-        Sin acciones
-      </p>
-    );
-
+  if (
+    status !== "PAYMENT_REVIEW" &&
+    status !== "PENDING_PAYMENT"
+  ) {
+    return null;
   }
 
   return (
     <div className="flex gap-2">
-
       <button
         disabled={loading}
-        onClick={() => updateStatus("APPROVED")}
-        className="
-          px-4 py-2 rounded-xl
-          bg-green-500
-          hover:bg-green-600
-          text-white text-sm font-medium
-          transition
-        "
+        onClick={() => handleAction("APPROVE")}
+        className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm"
       >
         Aprobar
       </button>
 
       <button
         disabled={loading}
-        onClick={() => updateStatus("REJECTED")}
-        className="
-          px-4 py-2 rounded-xl
-          bg-red-500
-          hover:bg-red-600
-          text-white text-sm font-medium
-          transition
-        "
+        onClick={() => handleAction("REJECT")}
+        className="bg-red-600 text-white px-3 py-1 rounded-lg text-sm"
       >
         Rechazar
       </button>
-
     </div>
   );
 }

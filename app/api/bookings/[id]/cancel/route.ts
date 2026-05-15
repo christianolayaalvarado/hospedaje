@@ -1,34 +1,24 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 
 import { prisma } from "@/lib/prisma";
-
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { BookingStatus } from "@prisma/client";
 
-// ======================================================
-// CANCEL BOOKING
-// ======================================================
-
-export async function POST(
+// =========================================================
+// CANCEL BOOKING (SECURE)
+// =========================================================
+export async function PATCH(
   req: Request,
-  context: {
-    params: Promise<{
-      id: string;
-    }>;
-  }
+  { params }: { params: { id: string } }
 ) {
-
   try {
-
-    // ==================================================
-    // SESSION
-    // ==================================================
-
-    const session =
-      await getServerSession(authOptions);
+    // =========================
+    // AUTH CHECK
+    // =========================
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-
       return NextResponse.json(
         {
           success: false,
@@ -38,28 +28,28 @@ export async function POST(
       );
     }
 
-    // ==================================================
-    // PARAMS
-    // ==================================================
+    const bookingId = params.id;
 
-    const { id } =
-      await context.params;
-
-    // ==================================================
-    // BOOKING
-    // ==================================================
-
-    const booking =
-      await prisma.booking.findUnique({
-
-        where: {
-          id,
+    if (!bookingId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "ID inválido",
         },
+        { status: 400 }
+      );
+    }
 
-      });
+    // =========================
+    // FIND BOOKING
+    // =========================
+    const booking = await prisma.booking.findUnique({
+      where: {
+        id: bookingId,
+      },
+    });
 
     if (!booking) {
-
       return NextResponse.json(
         {
           success: false,
@@ -69,86 +59,62 @@ export async function POST(
       );
     }
 
-    // ==================================================
-    // VALIDAR PROPIETARIO
-    // ==================================================
-
-    if (
-      booking.userId !==
-      session.user.id
-    ) {
-
+    // =========================
+    // OWNERSHIP CHECK (CRÍTICO)
+    // =========================
+    if (booking.userId !== session.user.id) {
       return NextResponse.json(
         {
           success: false,
-          error: "No autorizado",
+          error: "No tienes permiso para cancelar esta reserva",
         },
         { status: 403 }
       );
     }
 
-    // ==================================================
-    // VALIDAR ESTADO
-    // ==================================================
-
-    const allowedStatuses = [
-      "PENDING_PAYMENT",
-      "PAYMENT_REVIEW",
+    // =========================
+    // VALID STATUS RULES
+    // =========================
+    const blockedStatuses = [
+      BookingStatus.CANCELLED,
+      BookingStatus.EXPIRED,
+      BookingStatus.APPROVED, // 🔥 normalmente Airbnb no permite cancelar aprobadas aquí
     ];
 
-    if (
-      !allowedStatuses.includes(
-        booking.status
-      )
-    ) {
-
+    if (blockedStatuses.includes(booking.status)) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Esta reserva no puede cancelarse",
+          error: "Esta reserva no puede cancelarse",
         },
         { status: 400 }
       );
     }
 
-    // ==================================================
-    // CANCELAR
-    // ==================================================
-
-    await prisma.booking.update({
-
+    // =========================
+    // UPDATE BOOKING
+    // =========================
+    const updated = await prisma.booking.update({
       where: {
-        id,
+        id: bookingId,
       },
-
       data: {
-
-        status: "CANCELLED",
-
-        cancelledAt:
-          new Date(),
-
+        status: BookingStatus.CANCELLED,
+        cancelledAt: new Date(),
       },
-
     });
 
     return NextResponse.json({
       success: true,
+      booking: updated,
     });
-
   } catch (error) {
-
-    console.error(
-      "POST /cancel booking error:",
-      error
-    );
+    console.error("CANCEL BOOKING ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        error:
-          "Error cancelando reserva",
+        error: "Error interno al cancelar reserva",
       },
       { status: 500 }
     );
