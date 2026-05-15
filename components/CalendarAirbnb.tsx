@@ -13,7 +13,7 @@ const MIN_NIGHTS = 2;
 type Props = {
   selectedRange: DateRange | undefined;
 
-  onChange: (range: {
+  onChange: (selectedRange: {
     from?: Date;
     to?: Date;
   }) => void;
@@ -34,23 +34,20 @@ export default function CalendarAirbnb({
   const [isMobile, setIsMobile] = useState(false);
   const [bookedRanges, setBookedRanges] = useState<BookedRange[]>([]);
 
-  // =========================
   // RESPONSIVE
-  // =========================
   useEffect(() => {
-    const handleResize = () => {
+    const handleResize = () =>
       setIsMobile(window.innerWidth < 768);
-    };
 
     handleResize();
+
     window.addEventListener("resize", handleResize);
 
-    return () => window.removeEventListener("resize", handleResize);
+    return () =>
+      window.removeEventListener("resize", handleResize);
   }, []);
 
-  // =========================
-  // FETCH BOOKINGS
-  // =========================
+  // BOOKINGS
   useEffect(() => {
     async function fetchBookings() {
       try {
@@ -73,18 +70,12 @@ export default function CalendarAirbnb({
     fetchBookings();
   }, []);
 
-  // =========================
-  // NORMALIZE DATE
-  // =========================
   function normalizeDate(date: Date) {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     return d;
   }
 
-  // =========================
-  // BLOCKED DAYS
-  // =========================
   function isDayBlocked(date: Date) {
     const current = normalizeDate(date);
 
@@ -96,47 +87,34 @@ export default function CalendarAirbnb({
     });
   }
 
-  // =========================
-  // HANDLE SELECT (FIXED)
-  // =========================
   function handleSelect(r: DateRange | undefined) {
-    if (!r?.from) {
+    if (!r) {
       onChange({ from: undefined, to: undefined });
+      return;
+    }
+
+    if (r.from && !r.to) {
+      onChange({ from: r.from, to: undefined });
+      return;
+    }
+
+    if (r.from && r.to) {
+      const start = normalizeDate(r.from);
+      const end = normalizeDate(r.to);
+
+      const nights = Math.ceil(
+        (end.getTime() - start.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      if (nights < MIN_NIGHTS) return;
+
       setHoveredDate(undefined);
-      return;
+
+      onChange({ from: start, to: end });
     }
-
-    // solo inicio
-    if (!r.to) {
-      onChange({
-        from: r.from,
-        to: undefined,
-      });
-      return;
-    }
-
-    const start = normalizeDate(r.from);
-    const end = normalizeDate(r.to);
-
-    const nights = Math.ceil(
-      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (nights < MIN_NIGHTS) {
-      return;
-    }
-
-    setHoveredDate(undefined);
-
-    onChange({
-      from: start,
-      to: end,
-    });
   }
 
-  // =========================
-  // PREVIEW RANGE
-  // =========================
   const previewRange =
     selectedRange?.from &&
     hoveredDate &&
@@ -156,7 +134,8 @@ export default function CalendarAirbnb({
 
   return (
     <div className="bg-white w-full">
-      {/* LEGEND */}
+
+      {/* LEYENDA */}
       <div className="flex gap-4 text-xs px-4 pb-2">
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 bg-gray-300 rounded-full" />
@@ -172,10 +151,11 @@ export default function CalendarAirbnb({
       <DayPicker
         locale={es}
         mode="range"
+        min={MIN_NIGHTS}
         numberOfMonths={isMobile ? 1 : 2}
         selected={selectedRange}
         onSelect={handleSelect}
-        disabled={isDayBlocked}
+        disabled={(date) => isDayBlocked(date)}
         onDayMouseEnter={(date) => {
           if (selectedRange?.from && !selectedRange?.to) {
             setHoveredDate(date);
@@ -196,35 +176,25 @@ export default function CalendarAirbnb({
         classNames={{
           months:
             "flex flex-col md:flex-row gap-6 justify-center items-start px-2 pb-6",
-
           month: "space-y-4 w-full",
           month_grid: "w-full border-collapse",
-
           weekdays: "grid grid-cols-7 mb-2",
           weekday:
             "text-gray-500 font-medium text-sm flex items-center justify-center",
-
           week: "grid grid-cols-7",
-
           day: "flex items-center justify-center p-0",
-
           day_button:
             "h-10 w-10 rounded-full flex items-center justify-center text-sm transition hover:bg-gray-100",
-
           caption:
             "flex items-center justify-center py-3 font-semibold relative text-3xl",
-
           nav:
             "absolute top-10 left-0 right-0 w-full flex justify-between px-4",
-
           nav_button_previous:
             "hover:bg-gray-100 rounded-full p-2 mt-1",
-
           nav_button_next:
             "hover:bg-gray-100 rounded-full p-2 mt-1",
-
-          disabled: "text-gray-300 line-through opacity-40 cursor-not-allowed",
-
+          disabled:
+            "text-gray-300 line-through opacity-40 cursor-not-allowed",
           today: "border border-black rounded-full",
         }}
       />
