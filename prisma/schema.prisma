@@ -98,9 +98,11 @@ model Booking {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
 
   propertyId    String   @db.ObjectId
+
   property      Property @relation(fields: [propertyId], references: [id])
 
   userId        String   @db.ObjectId
+
   user          User @relation(fields: [userId], references: [id])
 
   startDate     DateTime
@@ -108,9 +110,20 @@ model Booking {
 
   totalPrice    Float
 
+  // COMPROBANTE
   paymentProof  String?
 
-  status        BookingStatus @default(PENDING)
+  // FECHA LÍMITE DE PAGO
+  expiresAt     DateTime?
+
+  // FECHA DE APROBACIÓN
+  approvedAt    DateTime?
+
+  // FECHA DE CANCELACIÓN
+  cancelledAt   DateTime?
+
+  // ESTADO
+  status        BookingStatus @default(PENDING_PAYMENT)
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -123,7 +136,22 @@ enum Role {
 }
 
 enum BookingStatus {
-  PENDING
+
+  // RESERVA CREADA
+  PENDING_PAYMENT
+
+  // COMPROBANTE SUBIDO
+  PAYMENT_REVIEW
+
+  // RESERVA APROBADA
   APPROVED
+
+  // COMPROBANTE RECHAZADO
   REJECTED
+
+  // CANCELADA POR USUARIO
+  CANCELLED
+
+  // VENCIDA AUTOMÁTICAMENTE
+  EXPIRED
 }

@@ -4,6 +4,11 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 
+import Link from "next/link";
+
+import CancelBookingButton
+  from "@/components/CancelBookingButton";
+
 export default async function MyBookingsPage() {
 
   const session =
@@ -20,6 +25,15 @@ export default async function MyBookingsPage() {
 
       where: {
         userId: session.user.id,
+
+        // NO MOSTRAR CANCELADAS
+        status: {
+          not: "CANCELLED",
+        },
+      },
+
+      include: {
+        property: true,
       },
 
       orderBy: {
@@ -28,7 +42,56 @@ export default async function MyBookingsPage() {
 
     });
 
+  function getStatusStyles(status: string) {
+
+    switch (status) {
+
+      case "APPROVED":
+        return "bg-green-100 text-green-700";
+
+      case "REJECTED":
+        return "bg-red-100 text-red-700";
+
+      case "PAYMENT_SENT":
+        return "bg-blue-100 text-blue-700";
+
+      case "CANCELLED":
+        return "bg-gray-200 text-gray-700";
+
+      case "EXPIRED":
+        return "bg-orange-100 text-orange-700";
+
+      default:
+        return "bg-yellow-100 text-yellow-700";
+    }
+  }
+
+  function getStatusText(status: string) {
+
+    switch (status) {
+
+      case "APPROVED":
+        return "Aprobada";
+
+      case "REJECTED":
+        return "Rechazada";
+
+      case "PAYMENT_SENT":
+        return "Pago enviado";
+
+      case "CANCELLED":
+        return "Cancelada";
+
+      case "EXPIRED":
+        return "Expirada";
+
+      default:
+        return "Pendiente de pago";
+    }
+  }
+
   return (
+
     <div className="min-h-screen bg-gray-50 p-6 md:p-10">
 
       <div className="max-w-5xl mx-auto">
@@ -122,14 +185,20 @@ export default async function MyBookingsPage() {
                     <div>
 
                       <h2 className="text-2xl font-semibold text-gray-900">
-                        Hospedaje en San Miguel
+
+                        {booking.property?.title ||
+                          "Hospedaje"}
+
                       </h2>
 
                       <p className="text-gray-500 mt-1">
+
                         Reserva realizada el{" "}
+
                         {new Date(
                           booking.createdAt
                         ).toLocaleDateString("es-PE")}
+
                       </p>
 
                     </div>
@@ -158,9 +227,11 @@ export default async function MyBookingsPage() {
                         </p>
 
                         <p className="font-semibold mt-2">
+
                           {new Date(
                             booking.startDate
                           ).toLocaleDateString("es-PE")}
+
                         </p>
 
                       </div>
@@ -180,9 +251,11 @@ export default async function MyBookingsPage() {
                         </p>
 
                         <p className="font-semibold mt-2">
+
                           {new Date(
                             booking.endDate
                           ).toLocaleDateString("es-PE")}
+
                         </p>
 
                       </div>
@@ -226,11 +299,13 @@ export default async function MyBookingsPage() {
                     <div className="text-left lg:text-right">
 
                       <p className="text-sm text-gray-500">
-                        Total pagado
+                        Total reserva
                       </p>
 
                       <h3 className="text-4xl font-bold text-emerald-600 mt-1">
+
                         S/ {booking.totalPrice}
+
                       </h3>
 
                     </div>
@@ -245,30 +320,83 @@ export default async function MyBookingsPage() {
                         rounded-full
                         text-sm
                         font-medium
-
-                        ${
-                          booking.status === "APPROVED"
-                            ? "bg-green-100 text-green-700"
-
-                            : booking.status === "REJECTED"
-                            ? "bg-red-100 text-red-700"
-
-                            : "bg-yellow-100 text-yellow-700"
-                        }
+                        ${getStatusStyles(
+                          booking.status
+                        )}
                       `}
                     >
 
-                      {
-                        booking.status === "APPROVED"
-                          ? "Aprobada"
-
-                          : booking.status === "REJECTED"
-                          ? "Rechazada"
-
-                          : "Pendiente"
-                      }
+                      {getStatusText(
+                        booking.status
+                      )}
 
                     </span>
+
+                    {/* ALERTA */}
+                    {booking.status ===
+                      "PENDING_PAYMENT" && (
+
+                      <div
+                        className="
+                          rounded-2xl
+                          border
+                          border-yellow-200
+                          bg-yellow-50
+                          p-4
+                          text-sm
+                          text-yellow-700
+                          max-w-sm
+                        "
+                      >
+
+                        Debes subir tu comprobante
+                        de pago antes de que expire
+                        la reserva.
+
+                      </div>
+
+                    )}
+
+                    {/* BOTONES */}
+                    <div className="flex flex-wrap gap-3">
+
+                      {/* SUBIR COMPROBANTE */}
+                      {booking.status ===
+                        "PENDING_PAYMENT" && (
+
+                        <Link
+                          href={`/my-bookings/${booking.id}/upload-proof`}
+                          className="
+                            bg-black
+                            hover:bg-gray-800
+                            text-white
+                            px-5
+                            py-3
+                            rounded-xl
+                            text-sm
+                            font-medium
+                            transition
+                          "
+                        >
+                          Subir comprobante
+                        </Link>
+
+                      )}
+
+                      {/* CANCELAR */}
+                      {(booking.status ===
+                        "PENDING_PAYMENT" ||
+
+                        booking.status ===
+                        "PAYMENT_SENT") && (
+
+                        <CancelBookingButton
+                          bookingId={booking.id}
+                        />
+
+                      )}
+
+                    </div>
 
                   </div>
 

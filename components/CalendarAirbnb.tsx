@@ -151,76 +151,67 @@ export default function CalendarAirbnb({
   }
 
   function handleSelect(
-    r: DateRange | undefined
-  ) {
+  r: DateRange | undefined
+) {
 
-    if (!r) {
+  if (!r) {
 
-      onChange({
-        from: undefined,
-        to: undefined,
-      });
+    onChange({
+      from: undefined,
+      to: undefined,
+    });
 
-      return;
-
-    }
-
-    // CLICK SIMPLE
-    if (
-      r.from &&
-      r.to &&
-      r.from.getTime() ===
-        r.to.getTime()
-    ) {
-
-      onChange({
-        from: r.from,
-        to: undefined,
-      });
-
-      return;
-
-    }
-
-    // VALIDAR RANGO
-    if (r.from && r.to) {
-
-      const start =
-        normalizeDate(r.from);
-
-      const end =
-        normalizeDate(r.to);
-
-      // MIN NOCHES
-      const nights = Math.ceil(
-
-        (
-          end.getTime() -
-          start.getTime()
-        ) /
-
-        (1000 * 60 * 60 * 24)
-
-      );
-
-      if (
-        nights < MIN_NIGHTS
-      ) {
-        return;
-      }
-
-      setHoveredDate(
-        undefined
-      );
-
-      onChange({
-        from: start,
-        to: end,
-      });
-
-    }
+    return;
 
   }
+
+  // SOLO FECHA INICIAL
+  if (r.from && !r.to) {
+
+    onChange({
+      from: r.from,
+      to: undefined,
+    });
+
+    return;
+
+  }
+
+  // RANGO COMPLETO
+  if (r.from && r.to) {
+
+    const start =
+      normalizeDate(r.from);
+
+    const end =
+      normalizeDate(r.to);
+
+    const nights = Math.ceil(
+
+      (
+        end.getTime() -
+        start.getTime()
+      ) /
+
+      (1000 * 60 * 60 * 24)
+
+    );
+
+    // mínimo 2 noches
+    if (nights < MIN_NIGHTS) {
+      return;
+    }
+
+    setHoveredDate(undefined);
+
+    onChange({
+      from: start,
+      to: end,
+    });
+
+  }
+
+}
 
   const previewRange =
 
@@ -377,33 +368,7 @@ export default function CalendarAirbnb({
             "border border-black rounded-full",
 
         }}
-        components={{
-
-          DayButton: (
-            props
-          ) => {
-
-            const blocked =
-              isDayBlocked(
-                props.day.date
-              );
-
-            return (
-
-              <button
-                {...props}
-                title={
-                  blocked
-                    ? "Fecha no disponible"
-                    : "Disponible"
-                }
-              />
-
-            );
-
-          },
-
-        }}
+        
       />
 
     </div>
