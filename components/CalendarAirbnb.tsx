@@ -186,13 +186,15 @@ export default function CalendarAirbnb({
           day_button:
             "h-12 w-12 md:h-10 md:w-10 rounded-full flex items-center justify-center text-sm transition hover:bg-gray-100",
           caption:
-            "flex items-center justify-center py-3 font-semibold relative text-3xl",
+            "relative flex items-center justify-center py-1 mb-2 font-semibold text-base md:text-lg",
+          caption_label:
+            "pl-10 md:pl-14",
           nav:
-            "absolute top-10 left-0 right-0 w-full flex justify-between px-4",
+          "absolute inset-x-0 top-0 flex items-center justify-between px-2",
           nav_button_previous:
-            "hover:bg-gray-100 rounded-full p-2 mt-1",
+            "flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition -mt-1",
           nav_button_next:
-            "hover:bg-gray-100 rounded-full p-2 mt-1",
+            "flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition -mt-1",
           disabled:
             "text-gray-300 line-through opacity-40 cursor-not-allowed",
           today: "border border-black rounded-full",
