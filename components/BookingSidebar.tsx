@@ -349,7 +349,9 @@ export default function BookingSidebar({
         price={getPrecioPorDia(new Date())}
         startDate={startDate}
         endDate={endDate}
+        nights={nights}
         onOpen={() => setOpen(true)}
+        onReserve={handleBooking}
       />
 
       {/* ================================= */}
