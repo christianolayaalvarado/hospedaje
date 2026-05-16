@@ -77,7 +77,7 @@ export async function PATCH(
     // =========================
     // VALID STATUS RULES
     // =========================
-    const blockedStatuses = [
+    const blockedStatuses: BookingStatus[] = [
       BookingStatus.CANCELLED,
       BookingStatus.EXPIRED,
       BookingStatus.APPROVED, // 🔥 normalmente Airbnb no permite cancelar aprobadas aquí
