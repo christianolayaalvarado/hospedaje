@@ -10,7 +10,9 @@ import { BookingStatus } from "@prisma/client";
 // =========================================================
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: {
+  params: Promise<{ id: string }>;
+}
 ) {
   try {
     // =========================
@@ -28,7 +30,7 @@ export async function PATCH(
       );
     }
 
-    const bookingId = params.id;
+    const { id: bookingId } = await context.params;
 
     if (!bookingId) {
       return NextResponse.json(
