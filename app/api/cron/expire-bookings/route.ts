@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { BookingStatus } from "@prisma/client";
 
+// =========================================================
+// CRON: EXPIRE BOOKINGS
+// =========================================================
 export async function GET() {
   try {
     const now = new Date();
 
-    // Buscar reservas vencidas
-    const expiredBookings = await prisma.booking.findMany({
+    // 🚀 UNA SOLA OPERACIÓN (más eficiente)
+    const result = await prisma.booking.updateMany({
       where: {
         status: {
           in: [
@@ -19,22 +22,6 @@ export async function GET() {
           lt: now,
         },
       },
-    });
-
-    if (expiredBookings.length === 0) {
-      return NextResponse.json({
-        message: "No expired bookings",
-        expired: 0,
-      });
-    }
-
-    // Actualizar a EXPIRED
-    await prisma.booking.updateMany({
-      where: {
-        id: {
-          in: expiredBookings.map((b) => b.id),
-        },
-      },
       data: {
         status: BookingStatus.EXPIRED,
         cancelledAt: now,
@@ -42,14 +29,19 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      message: "Bookings expired successfully",
-      expired: expiredBookings.length,
+      success: true,
+      expired: result.count,
+      time: now,
     });
+
   } catch (error) {
     console.error("CRON ERROR:", error);
 
     return NextResponse.json(
-      { error: "Internal error" },
+      {
+        success: false,
+        error: "Internal error",
+      },
       { status: 500 }
     );
   }
