@@ -70,18 +70,19 @@ export default function CalendarAirbnb({
   };
 
   // =========================
-  // HANDLE SELECT (PURE STATE)
+  // HANDLE SELECT (SAFE + STABLE)
   // =========================
   const handleSelect = (range: DateRange | undefined) => {
-    if (!range) {
+    if (!range?.from) {
       onChange({ from: undefined, to: undefined });
       return;
     }
 
-    const from = range.from ? normalize(range.from) : undefined;
+    const from = normalize(range.from);
     const to = range.to ? normalize(range.to) : undefined;
 
-    if (from && to && to < from) return;
+    // 🔒 evitar rangos inválidos
+    if (to && to < from) return;
 
     onChange({ from, to });
   };
@@ -102,6 +103,7 @@ export default function CalendarAirbnb({
 
   return (
     <div className="bg-white w-full">
+      {/* LEGEND */}
       <div className="flex gap-4 text-xs px-4 pb-2">
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 bg-gray-300 rounded-full" />
