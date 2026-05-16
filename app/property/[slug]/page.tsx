@@ -6,7 +6,7 @@ import PropertyClientPage from "@/components/PropertyClientPage";
 export default async function PropertyPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
 
