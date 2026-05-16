@@ -110,6 +110,7 @@ model Booking {
 
   // COMPROBANTE
   paymentProof  String?
+  paymentProofUploadedAt DateTime?
 
   // FECHA LÍMITE DE PAGO
   expiresAt     DateTime?

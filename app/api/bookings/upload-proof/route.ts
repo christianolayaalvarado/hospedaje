@@ -8,9 +8,6 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    // =====================================================
-    // VALIDACIÓN AUTH (BACKEND FIX)
-    // =====================================================
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, error: "No autorizado" },
@@ -22,12 +19,9 @@ export async function POST(req: Request) {
 
     const { bookingId, paymentProof } = body as {
       bookingId: string;
-      paymentProof: string;
+      paymentProof: string; // URL imagen (luego Cloudinary)
     };
 
-    // =====================================================
-    // VALIDACIÓN INPUT
-    // =====================================================
     if (!bookingId || !paymentProof) {
       return NextResponse.json(
         { success: false, error: "Datos incompletos" },
@@ -35,9 +29,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // =====================================================
-    // BUSCAR BOOKING
-    // =====================================================
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
     });
@@ -49,9 +40,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // =====================================================
-    // VALIDACIÓN SEGURIDAD (USER OWNERSHIP)
-    // =====================================================
+    // 🔒 ownership check
     if (booking.userId !== session.user.id) {
       return NextResponse.json(
         { success: false, error: "No permitido" },
@@ -59,26 +48,41 @@ export async function POST(req: Request) {
       );
     }
 
-    // =====================================================
-    // VALIDACIÓN ESTADO
-    // =====================================================
+    // ⛔ EXPIRADA
+    if (booking.status === BookingStatus.EXPIRED) {
+      return NextResponse.json(
+        { success: false, error: "Esta reserva ha expirado" },
+        { status: 410 }
+      );
+    }
+
+    // ⛔ NO PERMITIR REJECTED/CANCELLED
+    if (
+      booking.status === BookingStatus.CANCELLED ||
+      booking.status === BookingStatus.REJECTED
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Esta reserva no permite comprobante" },
+        { status: 409 }
+      );
+    }
+
+    // ⛔ SOLO PERMITIR PAGO O REUPLOAD CONTROLADO
     if (booking.status !== BookingStatus.PENDING_PAYMENT) {
       return NextResponse.json(
         {
           success: false,
-          error: "Esta reserva no permite comprobante",
+          error: "Ya se envió un comprobante o está en revisión",
         },
         { status: 409 }
       );
     }
 
-    // =====================================================
-    // ACTUALIZAR BOOKING
-    // =====================================================
     const updated = await prisma.booking.update({
       where: { id: bookingId },
       data: {
         paymentProof,
+        paymentProofUploadedAt: new Date(),
         status: BookingStatus.PAYMENT_REVIEW,
       },
     });
