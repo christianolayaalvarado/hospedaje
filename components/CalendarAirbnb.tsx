@@ -1,24 +1,15 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-
-import { useState, useEffect } from "react";
 import { es } from "date-fns/locale";
-
 import "./calendar.css";
-
-const MIN_NIGHTS = 2;
 
 type Props = {
   selectedRange: DateRange | undefined;
-
-  onChange: (selectedRange: {
-    from?: Date;
-    to?: Date;
-  }) => void;
-
-  getPrecioPorDia: (date: Date) => number;
+  onChange: (range: { from?: Date; to?: Date }) => void;
+  propertyId?: string;
 };
 
 type BookedRange = {
@@ -26,116 +17,91 @@ type BookedRange = {
   to: Date;
 };
 
+const normalize = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
 export default function CalendarAirbnb({
   selectedRange,
   onChange,
+  propertyId,
 }: Props) {
-  const [hoveredDate, setHoveredDate] = useState<Date | undefined>();
-  const [isMobile, setIsMobile] = useState(false);
+  const [hovered, setHovered] = useState<Date | null>(null);
   const [bookedRanges, setBookedRanges] = useState<BookedRange[]>([]);
 
-  // RESPONSIVE
+  // =========================
+  // FETCH BOOKINGS (FILTERED)
+  // =========================
   useEffect(() => {
-    const handleResize = () =>
-      setIsMobile(window.innerWidth < 768);
-
-    handleResize();
-
-    window.addEventListener("resize", handleResize);
-
-    return () =>
-      window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // BOOKINGS
-  useEffect(() => {
-    async function fetchBookings() {
+    async function load() {
       try {
-        const res = await fetch("/api/bookings");
+        const url = propertyId
+          ? `/api/bookings?propertyId=${propertyId}`
+          : "/api/bookings";
+
+        const res = await fetch(url);
         const data = await res.json();
 
         if (!Array.isArray(data)) return;
 
         setBookedRanges(
           data.map((b: any) => ({
-            from: new Date(b.startDate),
-            to: new Date(b.endDate),
+            from: normalize(new Date(b.startDate)),
+            to: normalize(new Date(b.endDate)),
           }))
         );
-      } catch (e) {
-        console.error(e);
+      } catch (err) {
+        console.error(err);
       }
     }
 
-    fetchBookings();
-  }, []);
+    load();
+  }, [propertyId]);
 
-  function normalizeDate(date: Date) {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }
+  // =========================
+  // BLOCKED DAYS
+  // =========================
+  const isBlocked = (date: Date) => {
+    const d = normalize(date);
 
-  function isDayBlocked(date: Date) {
-    const current = normalizeDate(date);
+    return bookedRanges.some((r) => d >= r.from && d <= r.to);
+  };
 
-    return bookedRanges.some((range) => {
-      const from = normalizeDate(range.from);
-      const to = normalizeDate(range.to);
-
-      return current >= from && current <= to;
-    });
-  }
-
-  function handleSelect(r: DateRange | undefined) {
-    if (!r) {
+  // =========================
+  // HANDLE SELECT (PURE STATE)
+  // =========================
+  const handleSelect = (range: DateRange | undefined) => {
+    if (!range) {
       onChange({ from: undefined, to: undefined });
       return;
     }
 
-    if (r.from && !r.to) {
-      onChange({ from: r.from, to: undefined });
-      return;
-    }
+    const from = range.from ? normalize(range.from) : undefined;
+    const to = range.to ? normalize(range.to) : undefined;
 
-    if (r.from && r.to) {
-      const start = normalizeDate(r.from);
-      const end = normalizeDate(r.to);
+    if (from && to && to < from) return;
 
-      const nights = Math.ceil(
-        (end.getTime() - start.getTime()) /
-          (1000 * 60 * 60 * 24)
-      );
+    onChange({ from, to });
+  };
 
-      if (nights < MIN_NIGHTS) return;
+  // =========================
+  // PREVIEW RANGE (AIRBNB UX)
+  // =========================
+  const previewRange = useMemo(() => {
+    if (!selectedRange?.from || selectedRange?.to || !hovered) return undefined;
 
-      setHoveredDate(undefined);
-
-      onChange({ from: start, to: end });
-    }
-  }
-
-  const previewRange =
-    selectedRange?.from &&
-    hoveredDate &&
-    !selectedRange?.to
-      ? {
-          from:
-            hoveredDate < selectedRange.from
-              ? hoveredDate
-              : selectedRange.from,
-
-          to:
-            hoveredDate > selectedRange.from
-              ? hoveredDate
-              : selectedRange.from,
-        }
-      : undefined;
+    return {
+      from:
+        hovered < selectedRange.from ? hovered : selectedRange.from,
+      to:
+        hovered > selectedRange.from ? hovered : selectedRange.from,
+    };
+  }, [hovered, selectedRange]);
 
   return (
     <div className="bg-white w-full">
-
-      {/* LEYENDA */}
       <div className="flex gap-4 text-xs px-4 pb-2">
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 bg-gray-300 rounded-full" />
@@ -151,19 +117,14 @@ export default function CalendarAirbnb({
       <DayPicker
         locale={es}
         mode="range"
-        min={MIN_NIGHTS}
-        numberOfMonths={isMobile ? 1 : 2}
+        numberOfMonths={2}
         selected={selectedRange}
         onSelect={handleSelect}
-        disabled={(date) => isDayBlocked(date)}
-        onDayMouseEnter={(date) => {
-          if (selectedRange?.from && !selectedRange?.to) {
-            setHoveredDate(date);
-          }
-        }}
+        disabled={isBlocked}
+        onDayMouseEnter={(day) => setHovered(day)}
         modifiers={{
           preview: previewRange,
-          booked: (date) => isDayBlocked(date),
+          booked: isBlocked,
         }}
         modifiersClassNames={{
           range_start: "rdp-range_start",
@@ -171,33 +132,19 @@ export default function CalendarAirbnb({
           range_middle: "rdp-range_middle",
           preview: "rdp-preview",
           booked: "rdp-blocked",
-          today: "rdp-today",
         }}
         classNames={{
           months:
             "flex flex-col md:flex-row gap-6 justify-center items-start px-2 pb-6",
           month: "space-y-4 w-full",
-          month_grid: "w-full border-collapse",
           weekdays: "grid grid-cols-7 mb-2",
           weekday:
-            "text-gray-500 font-medium text-sm flex items-center justify-center",
+            "text-gray-500 font-medium text-sm flex justify-center",
           week: "grid grid-cols-7",
-          day: "flex items-center justify-center p-0",
+          day: "flex justify-center",
           day_button:
-            "h-12 w-12 md:h-10 md:w-10 rounded-full flex items-center justify-center text-sm transition hover:bg-gray-100",
-          caption:
-            "relative flex items-center justify-center py-1 mb-2 font-semibold text-base md:text-lg",
-          caption_label:
-            "pl-10 md:pl-14",
-          nav:
-          "absolute inset-x-0 top-0 flex items-center justify-between px-2",
-          nav_button_previous:
-            "flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition -mt-1",
-          nav_button_next:
-            "flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition -mt-1",
-          disabled:
-            "text-gray-300 line-through opacity-40 cursor-not-allowed",
-          today: "border border-black rounded-full",
+            "h-10 w-10 rounded-full flex items-center justify-center hover:bg-gray-100 transition",
+          nav: "flex justify-between px-2",
         }}
       />
     </div>

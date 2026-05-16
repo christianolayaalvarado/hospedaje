@@ -16,7 +16,6 @@ type Props = {
   setStartDate: (date: Date | null) => void;
   setEndDate: (date: Date | null) => void;
   propertyId: string;
-
   expiresAt?: string | null;
 };
 
@@ -37,64 +36,52 @@ export default function BookingSidebar({
   const serviceFee = 30;
 
   // =========================
-  // COUNTDOWN EXPIRATION (AIRBNB PRO UX)
+  // EXPIRATION ENGINE
   // =========================
-  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
     if (!expiresAt) return;
 
-    const calculate = () => {
+    const tick = () => {
       const diff = new Date(expiresAt).getTime() - Date.now();
       setTimeLeft(diff > 0 ? diff : 0);
     };
 
-    calculate();
+    tick();
+    const interval = setInterval(tick, 1000);
 
-    const interval = setInterval(calculate, 1000);
     return () => clearInterval(interval);
   }, [expiresAt]);
 
   const formatTime = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000);
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
 
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return `${hours.toString().padStart(2, "0")}:${minutes
+    return `${h.toString().padStart(2, "0")}:${m
       .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+      .padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
 
-  const urgency = useMemo(() => {
-    const minutes = timeLeft / 60000;
-
-    if (minutes <= 5) return "critical";
-    if (minutes <= 10) return "danger";
-    if (minutes <= 30) return "warning";
-    return "safe";
-  }, [timeLeft]);
-
   // =========================
-  // NOCHES
+  // BUSINESS LOGIC (CENTRAL)
   // =========================
   const nights = useMemo(() => {
     if (!startDate || !endDate) return 0;
 
-    return Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const start = new Date(startDate.getTime());
+    const end = new Date(endDate.getTime());
+
+    return Math.ceil((end.getTime() - start.getTime()) / 86400000);
   }, [startDate, endDate]);
 
-  // =========================
-  // TOTAL
-  // =========================
   const total = useMemo(() => {
     if (!startDate || !endDate) return 0;
 
     let sum = 0;
-    const current = new Date(startDate);
+    const current = new Date(startDate.getTime());
 
     while (current < endDate) {
       sum += getPrecioPorDia(current);
@@ -105,10 +92,19 @@ export default function BookingSidebar({
   }, [startDate, endDate]);
 
   // =========================
-  // BOOKING
+  // SINGLE SOURCE OF TRUTH
   // =========================
-  async function handleBooking() {
-    if (!startDate || !endDate || loading || timeLeft === 0) return;
+  const canBook = useMemo(() => {
+    return (
+      !!startDate &&
+      !!endDate &&
+      timeLeft > 0 &&
+      !loading
+    );
+  }, [startDate, endDate, timeLeft, loading]);
+
+  const handleBooking = async () => {
+    if (!canBook) return;
 
     try {
       setLoading(true);
@@ -127,7 +123,7 @@ export default function BookingSidebar({
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.error || "No se pudo realizar la reserva");
+        toast.error(data.error || "Error en la reserva");
         return;
       }
 
@@ -135,80 +131,49 @@ export default function BookingSidebar({
 
       setStartDate(null);
       setEndDate(null);
-
       setOpen(false);
       setSuccessModal(true);
       setRefreshKey((v) => v + 1);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error inesperado al crear reserva");
+    } catch (e) {
+      toast.error("Error inesperado");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
+  // =========================
+  // UI
+  // =========================
   return (
     <>
-      {/* SUCCESS MODAL */}
       <ReservationModal
         open={successModal}
         onClose={() => setSuccessModal(false)}
       />
 
-      {/* DESKTOP */}
       <div className="hidden md:block sticky top-24">
         <div className="border rounded-2xl p-6 shadow-xl bg-white space-y-5">
 
           <p className="text-xl font-semibold">
-            Desde S/ {getPrecioPorDia(new Date())}
-            <span className="text-gray-500 text-base font-normal">
-              {" "} / noche
-            </span>
+            Desde S/ {getPrecioPorDia(new Date())} / noche
           </p>
 
-          {/* COUNTDOWN */}
           {expiresAt && (
-            <div
-              className={`
-                text-sm font-semibold transition
-                ${
-                  urgency === "safe"
-                    ? "text-green-600"
-                    : urgency === "warning"
-                    ? "text-yellow-600"
-                    : urgency === "danger"
-                    ? "text-red-500"
-                    : "text-red-600 animate-pulse"
-                }
-              `}
-            >
-              {timeLeft > 0 ? (
-                <>⏳ Expira en {formatTime(timeLeft)}</>
-              ) : (
-                <>❌ Esta reserva ha expirado</>
-              )}
-            </div>
+            <p className={timeLeft < 600000 ? "text-red-600" : "text-green-600"}>
+              ⏳ {timeLeft > 0 ? formatTime(timeLeft) : "Expirado"}
+            </p>
           )}
 
           <div
             onClick={() => setOpen(true)}
             className="border rounded-xl p-3 cursor-pointer"
           >
-            <div className="grid grid-cols-2 text-sm">
-              <div>
-                <p className="text-xs text-gray-500">CHECK-IN</p>
-                <p>{startDate?.toLocaleDateString("es-PE") || "Agregar fecha"}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500">CHECK-OUT</p>
-                <p>{endDate?.toLocaleDateString("es-PE") || "Agregar fecha"}</p>
-              </div>
-            </div>
+            <p>{startDate?.toLocaleDateString("es-PE") || "Check-in"}</p>
+            <p>{endDate?.toLocaleDateString("es-PE") || "Check-out"}</p>
           </div>
 
           <button
-            disabled={!startDate || !endDate || loading || timeLeft === 0}
+            disabled={!canBook}
             onClick={handleBooking}
             className="bg-rose-500 text-white py-3 rounded-xl w-full disabled:opacity-50"
           >
@@ -217,7 +182,6 @@ export default function BookingSidebar({
         </div>
       </div>
 
-      {/* MOBILE */}
       <MobileBookingBar
         price={getPrecioPorDia(new Date())}
         startDate={startDate}
@@ -227,7 +191,6 @@ export default function BookingSidebar({
         onReserve={handleBooking}
       />
 
-      {/* MODAL */}
       <AnimatePresence>
         {open && (
           <>
@@ -239,28 +202,16 @@ export default function BookingSidebar({
             <motion.div className="fixed inset-0 z-50 flex items-center justify-center">
               <div className="bg-white w-full md:max-w-3xl rounded-3xl overflow-hidden">
 
-                <div className="p-4 border-b flex justify-between items-center">
-                  <div>
-                    <h2 className="text-lg font-semibold">
-                      {nights > 0 ? `${nights} noches` : "Selecciona fechas"}
-                    </h2>
-
-                    {expiresAt && (
-                      <p className={urgency === "critical"
-                        ? "text-red-600 animate-pulse text-sm"
-                        : "text-sm text-red-500"}
-                      >
-                        ⏳ Expira en {formatTime(timeLeft)}
-                      </p>
-                    )}
-                  </div>
-
-                  <button onClick={() => setOpen(false)}>✕</button>
+                <div className="p-4 border-b flex justify-between">
+                  <h2 className="font-semibold">
+                    {nights ? `${nights} noches` : "Selecciona fechas"}
+                  </h2>
                 </div>
 
                 <div className="p-4">
                   <CalendarAirbnb
                     key={refreshKey}
+                    propertyId={propertyId}
                     selectedRange={{
                       from: startDate ?? undefined,
                       to: endDate ?? undefined,
@@ -269,13 +220,12 @@ export default function BookingSidebar({
                       setStartDate(from ?? null);
                       setEndDate(to ?? null);
                     }}
-                    getPrecioPorDia={getPrecioPorDia}
                   />
                 </div>
 
                 <div className="p-4 border-t">
                   <button
-                    disabled={!startDate || !endDate || loading || timeLeft === 0}
+                    disabled={!canBook}
                     onClick={handleBooking}
                     className="w-full bg-rose-500 text-white py-3 rounded-xl disabled:opacity-50"
                   >
