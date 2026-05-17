@@ -1,32 +1,52 @@
 import { useEffect, useState } from "react";
 
-export function useCountdown(expiresAt?: Date | string | null) {
-  const [timeLeft, setTimeLeft] = useState<string>("");
+export function useCountdown(
+  expiresAt?: Date | string | null
+) {
+  const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
-    if (!expiresAt) return;
+    if (!expiresAt) {
+      setTimeLeft("");
+      return;
+    }
 
     const target = new Date(expiresAt).getTime();
 
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
+    const update = () => {
+      const now = Date.now();
+
       const diff = target - now;
 
       if (diff <= 0) {
         setTimeLeft("Expirada");
-        clearInterval(interval);
         return;
       }
 
-      const minutes = Math.floor(diff / 1000 / 60);
-      const seconds = Math.floor((diff / 1000) % 60);
+      const hours = Math.floor(diff / 1000 / 60 / 60);
+
+      const minutes = Math.floor(
+        (diff % (1000 * 60 * 60)) / (1000 * 60)
+      );
+
+      const seconds = Math.floor(
+        (diff % (1000 * 60)) / 1000
+      );
 
       setTimeLeft(
-        `${minutes.toString().padStart(2, "0")}:${seconds
+        `${hours
+          .toString()
+          .padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${seconds
           .toString()
           .padStart(2, "0")}`
       );
-    }, 1000);
+    };
+
+    update();
+
+    const interval = setInterval(update, 1000);
 
     return () => clearInterval(interval);
   }, [expiresAt]);

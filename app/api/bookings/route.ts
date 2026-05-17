@@ -1,31 +1,37 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { BookingStatus } from "@prisma/client";
 
-// =========================================================
-// CLEAN EXPIRED BOOKINGS (helper interno)
-// =========================================================
+import {
+  calculateBookingPrice,
+  validateDiscountCode,
+} from "@/lib/pricing";
+
 async function expireBookings() {
   await prisma.booking.updateMany({
     where: {
       status: BookingStatus.PENDING_PAYMENT,
-      expiresAt: { lt: new Date() },
+      expiresAt: {
+        lt: new Date(),
+      },
     },
-    data: { status: BookingStatus.EXPIRED },
+    data: {
+      status: BookingStatus.EXPIRED,
+    },
   });
 }
 
-// =========================================================
-// GET BOOKINGS
-// =========================================================
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await expireBookings();
 
+    const propertyId = req.nextUrl.searchParams.get("propertyId");
+
     const bookings = await prisma.booking.findMany({
       where: {
+        ...(propertyId ? { propertyId } : {}),
         status: {
           in: [
             BookingStatus.PENDING_PAYMENT,
@@ -40,88 +46,83 @@ export async function GET() {
         endDate: true,
         status: true,
         propertyId: true,
-        expiresAt: true, // 👈 útil para contador frontend
+        expiresAt: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     return NextResponse.json(bookings);
   } catch (error) {
-    console.error("GET /bookings error:", error);
+    console.error(error);
 
     return NextResponse.json(
-      { success: false, error: "Error fetching bookings" },
-      { status: 500 }
+      {
+        success: false,
+        error: "Error fetching bookings",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
 
-// =========================================================
-// CREATE BOOKING
-// =========================================================
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: "Debes iniciar sesión" },
-        { status: 401 }
+        {
+          success: false,
+          error: "Debes iniciar sesión",
+        },
+        {
+          status: 401,
+        }
       );
     }
 
     const body = await req.json();
-    const { startDate, endDate, totalPrice, propertyId } = body;
 
-    // =========================
-    // VALIDACIONES
-    // =========================
-    if (!propertyId || !startDate || !endDate || !totalPrice) {
+    const {
+      startDate,
+      endDate,
+      propertyId,
+      discountCode,
+    } = body;
+
+    if (!propertyId || !startDate || !endDate) {
       return NextResponse.json(
-        { success: false, error: "Datos incompletos" },
-        { status: 400 }
+        {
+          success: false,
+          error: "Datos incompletos",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return NextResponse.json(
-        { success: false, error: "Fechas inválidas" },
-        { status: 400 }
-      );
-    }
-
     if (start >= end) {
       return NextResponse.json(
-        { success: false, error: "Rango de fechas inválido" },
-        { status: 400 }
+        {
+          success: false,
+          error: "Fechas inválidas",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    // =========================
-    // EXPIRAR ANTES DE CREAR
-    // =========================
     await expireBookings();
 
-    // =========================
-    // VALIDAR PROPERTY
-    // =========================
-    const property = await prisma.property.findUnique({
-      where: { id: propertyId },
-    });
-
-    if (!property) {
-      return NextResponse.json(
-        { success: false, error: "Propiedad no existe" },
-        { status: 404 }
-      );
-    }
-
-    // =========================
-    // OVERLAP CHECK
-    // =========================
     const overlap = await prisma.booking.findFirst({
       where: {
         propertyId,
@@ -133,50 +134,122 @@ export async function POST(req: Request) {
           ],
         },
         AND: [
-          { startDate: { lt: end } },
-          { endDate: { gt: start } },
+          {
+            startDate: {
+              lt: end,
+            },
+          },
+          {
+            endDate: {
+              gt: start,
+            },
+          },
         ],
       },
     });
 
     if (overlap) {
       return NextResponse.json(
-        { success: false, error: "Fechas ya reservadas" },
-        { status: 409 }
+        {
+          success: false,
+          error: "Fechas ya reservadas",
+        },
+        {
+          status: 409,
+        }
       );
     }
 
-    // =========================
-    // EXPIRATION TIME (1 HORA)
-    // =========================
-    const ONE_HOUR = 1000 * 60 * 60;
-    const expiresAt = new Date(Date.now() + ONE_HOUR);
+    const pricing = await calculateBookingPrice({
+      startDate: start,
+      endDate: end,
+      propertyId,
+    });
 
-    // =========================
-    // CREATE BOOKING
-    // =========================
+    let total = pricing.total;
+    let discountValue = 0;
+    let discountCodeId: string | undefined;
+
+    if (discountCode) {
+      const validation = await validateDiscountCode({
+        code: discountCode,
+        subtotal: pricing.subtotal,
+      });
+
+      if (!validation.valid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: validation.error,
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      discountValue = validation.discountValue;
+      discountCodeId = validation.discount?.id;
+
+      total -= discountValue;
+
+      await prisma.discountCode.update({
+        where: {
+          id: validation.discount!.id,
+        },
+        data: {
+          usedCount: {
+            increment: 1,
+          },
+        },
+      });
+    }
+
+    total = Math.max(0, total);
+
+    const ONE_HOUR = 1000 * 60 * 60;
+
+    const expiresAt = new Date(
+      Date.now() + ONE_HOUR
+    );
+
     const booking = await prisma.booking.create({
       data: {
+        propertyId,
+        userId: session.user.id,
         startDate: start,
         endDate: end,
-        totalPrice: Number(totalPrice),
-        status: BookingStatus.PENDING_PAYMENT,
+        subtotalPrice: pricing.subtotal,
+        totalPrice: total,
+        discountValue,
+        discountCodeId,
         expiresAt,
-        userId: session.user.id,
-        propertyId,
+        status: BookingStatus.PENDING_PAYMENT,
       },
     });
 
     return NextResponse.json({
       success: true,
       booking,
+      pricing: {
+        subtotal: pricing.subtotal,
+        cleaningFee: pricing.cleaningFee,
+        serviceFee: pricing.serviceFee,
+        discountValue,
+        total,
+      },
     });
   } catch (error) {
-    console.error("POST /bookings error:", error);
+    console.error(error);
 
     return NextResponse.json(
-      { success: false, error: "Error creando booking" },
-      { status: 500 }
+      {
+        success: false,
+        error: "Error creando booking",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
